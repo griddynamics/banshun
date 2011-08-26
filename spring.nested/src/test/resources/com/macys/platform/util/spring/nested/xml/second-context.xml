@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:nested="http://www.macys.com/schema/nested"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://www.macys.com/schema/nested http://www.macys.com/schema/nested/nested-schema.xsd
+       ">
+
+    <bean name="secondChild" class="com.macys.platform.util.spring.nested.xml.ChildImpl" />
+</beans>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.macys.com/schema/nested"
+       xmlns:beans="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+         http://www.macys.com/schema/nested http://www.macys.com/schema/nested/nested-schema.xsd
+         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       ">
+
+    <beans:import resource="second-context.xml" />
+
+    <export ref="secondChild" interface="com.macys.platform.util.spring.nested.xml.Child" />
+
+</beans:beans>

@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.macys.platform</groupId>
+	<artifactId>spring.nested</artifactId>
+	<name>${project.artifactId}</name>
+	<version>2.3.0-SNAPSHOT</version>
+
+	<description>allows to build isolated children contexts and import export some beans explicitly</description>
+
+	<parent>
+		<groupId>com.macys</groupId>
+		<artifactId>MacysParent</artifactId>
+		<version>2.4.0</version>
+	</parent>
+
+	<properties>
+        <spring.version>3.0.5.RELEASE</spring.version>
+		<system.exceptions.version>2.0.0</system.exceptions.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+		    <groupId>com.macys.platform</groupId>
+		    <artifactId>system.exceptions</artifactId>
+		    <version>${system.exceptions.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>com.jamonapi</groupId>
+            <artifactId>jamon</artifactId>
+            <version>2.7</version>
+        </dependency>        
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="root" class="com.macys.platform.util.spring.nested.ContextParentBean">
+		<property name="configLocation" value="child-controllers.xml"></property>
+		<property name="registry">
+			<bean class="com.macys.platform.util.spring.nested.RegistryBean"></bean>
+		</property>
+		<property name="strictErrorHandling" value="false" />
+	</bean>
+	
+	<bean id="scanningRequestHandler" class="com.macys.platform.util.spring.nested.ScanningParentAnnotationHandlerMapping">
+	   <property name="order" value="1"/>
+	</bean>
+
+
+</beans>

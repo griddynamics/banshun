@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:nested="http://www.macys.com/schema/nested"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.macys.com/schema/nested http://www.macys.com/schema/nested/nested-schema.xsd
+       ">
+    
+    <bean name="firstObject" class="com.macys.platform.util.spring.nested.analyzer.TransportObject" />
+    <bean name="secondObject" class="com.macys.platform.util.spring.nested.analyzer.TransportObject" />
+    <bean name="thirdObject" class="com.macys.platform.util.spring.nested.analyzer.TransportObject" />
+    <bean name="fourthObject" class="com.macys.platform.util.spring.nested.analyzer.TransportObject" />
+
+    
+    <nested:export ref="firstObject" interface="com.macys.platform.util.spring.nested.analyzer.SuperInterface"/>
+    <nested:export ref="secondObject" interface="com.macys.platform.util.spring.nested.analyzer.SubInterface"/>
+
+    <!-- Old fashion way using boilerplate xml wasn't changed here
+        due to check it's working every time by running unit-tests -->
+    <bean name="thirdObject-export-ref" factory-bean="root" factory-method="export" lazy-init="false">
+        <constructor-arg>
+            <bean class="com.macys.platform.util.spring.nested.ExportRef">
+                <constructor-arg >
+                    <idref bean="thirdObject"/>
+                </constructor-arg>
+                <constructor-arg value="com.macys.platform.util.spring.nested.analyzer.SuperInterface"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean name="fourthObject-export-ref" factory-bean="root" factory-method="export" lazy-init="false">
+        <constructor-arg>
+            <bean class="com.macys.platform.util.spring.nested.ExportRef">
+                <constructor-arg >
+                    <idref bean="fourthObject"/>
+                </constructor-arg>
+                <constructor-arg value="com.macys.platform.util.spring.nested.analyzer.SubInterface"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+</beans>
