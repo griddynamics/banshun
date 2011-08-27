@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights Reserved
+  http://www.griddynamics.com
+
+  For information about the licensing and copyright of this document please
+  contact Grid Dynamics at info@griddynamics.com.
+
+  $Id: $
+  @Project:     Spring Nested
+  @Description: 
+ -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"
+	default-lazy-init="true">
+
+
+	<bean id="root" class="com.griddynamics.spring.nested.RegistryBean"  ></bean>
+	
+	<bean name="export-declaration" factory-bean="root" factory-method="export"  depends-on="early-import"  >
+		<constructor-arg> <bean class="com.griddynamics.spring.nested.ExportRef">
+			<constructor-arg><idref local="just-bean"/></constructor-arg>
+			<constructor-arg value="com.griddynamics.spring.nested.ExtendedChild"></constructor-arg>
+		</bean></constructor-arg>
+	</bean>
+	
+	<bean id="just-bean" class="java.lang.Integer"><constructor-arg value="666"/></bean>
+	
+	<bean name="early-import" factory-bean="root" factory-method="lookup" >
+		<constructor-arg ><idref local="just-bean"/></constructor-arg>
+		<constructor-arg value="com.griddynamics.spring.nested.ExtendedChild"></constructor-arg>
+	</bean>
+	
+	<bean name="late-import" factory-bean="root" factory-method="lookup" depends-on="export-declaration" >
+		<constructor-arg ><idref local="just-bean"/></constructor-arg>
+		<constructor-arg value="com.griddynamics.spring.nested.ExtendedChild"></constructor-arg>
+	</bean>
+</beans>
