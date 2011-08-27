@@ -4,9 +4,17 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 
-
 /**
- * just a bean used to carry input parameters for {@link Registry.export}
+ * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
+ * Reserved http://www.griddynamics.com
+ * 
+ * For information about the licensing and copyright of this document please
+ * contact Grid Dynamics at info@griddynamics.com.
+ * 
+ * $Id: $
+ * 
+ * @Project: Spring Nested
+ * @Description: just a bean used to carry input parameters for {@link Registry.export}
  * also carries reference to bean factory which are injected by Spring via {@link BeanFactoryAware}
  *  after the way inject beanfactory in the method arguments will be found we can get rid of this class.   
  */

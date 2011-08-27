@@ -1,3 +1,14 @@
+<!-- 
+  Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights Reserved
+  http://www.griddynamics.com
+
+  For information about the licensing and copyright of this document please
+  contact Grid Dynamics at info@griddynamics.com.
+
+  $Id: $
+  @Project:     Spring Nested
+  @Description: 
+ -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -9,32 +20,15 @@
 
 	<description>allows to build isolated children contexts and import export some beans explicitly</description>
 
-	<parent>
-		<groupId>com.macys</groupId>
-		<artifactId>MacysParent</artifactId>
-		<version>2.4.0</version>
-	</parent>
-
 	<properties>
         <spring.version>3.0.5.RELEASE</spring.version>
-		<system.exceptions.version>2.0.0</system.exceptions.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
-		    <groupId>com.macys.platform</groupId>
-		    <artifactId>system.exceptions</artifactId>
-		    <version>${system.exceptions.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>com.jamonapi</groupId>
-            <artifactId>jamon</artifactId>
-            <version>2.7</version>
-        </dependency>        
+		</dependency>   
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging-api</artifactId>

@@ -17,11 +17,22 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping;
 
-/** implementation of {@link HandlersRegistry} made by copy-paste from Spring MVC 
+/**
+ * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
+ * Reserved http://www.griddynamics.com
+ * 
+ * For information about the licensing and copyright of this document please
+ * contact Grid Dynamics at info@griddynamics.com.
+ * 
+ * $Id: $
+ * 
+ * @Project: Spring Nested
+ * @Description: implementation of {@link HandlersRegistry} made by copy-paste from Spring MVC 
  * usage: instantiate this bean in the root context, call registerXxx methods from nested children 
  * contexts to register controllers and request handlers.
  * don't forget to instantiate HandlerAdapters beans and follow Spring MVC conventions.
- *  */
+ * 
+ **/
 public class ContextParentAnnotationHandlerMapping extends DefaultAnnotationHandlerMapping implements HandlersRegistry {
 
 	private final Map<Class, RequestMapping> cachedMappings = new HashMap<Class, RequestMapping>();

@@ -25,7 +25,16 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
 /**
- * singleton bean, should be used accordingly with the interface {@link Registry} recommendations.
+ * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
+ * Reserved http://www.griddynamics.com
+ * 
+ * For information about the licensing and copyright of this document please
+ * contact Grid Dynamics at info@griddynamics.com.
+ * 
+ * $Id: $
+ * 
+ * @Project: Spring Nested
+ * @Description: singleton bean, should be used accordingly with the interface {@link Registry} recommendations.
  * Implementation of the {@link Registry} delegated to simple internal bean {@link RegistryBean}
  * Also, it instantiate the nested children contexts by the given resources. These contexts
  * receives factory bean instantiates this bean as a "parent bean". This bean will be available via

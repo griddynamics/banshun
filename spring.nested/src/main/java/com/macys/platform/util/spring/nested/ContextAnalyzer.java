@@ -16,9 +16,18 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This analyzer is checking bean definitions during instantiation of children contexts.
+ * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
+ * Reserved http://www.griddynamics.com
+ * 
+ * For information about the licensing and copyright of this document please
+ * contact Grid Dynamics at info@griddynamics.com.
+ * 
+ * $Id: $
+ * 
+ * @Project: Spring Nested
+ * @Description: This analyzer is checking bean definitions during instantiation of children contexts.
  * @author Alexey Olenev
- *
+ * 
  */
 public class ContextAnalyzer {
     private static final Logger log = LoggerFactory.getLogger(ContextAnalyzer.class);

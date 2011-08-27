@@ -15,7 +15,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Singleton bean that instantiates nested children contexts by the give resources.
+ * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
+ * Reserved http://www.griddynamics.com
+ * 
+ * For information about the licensing and copyright of this document please
+ * contact Grid Dynamics at info@griddynamics.com.
+ * 
+ * $Id: $
+ * 
+ * @Project: Spring Nested
+ * @Description: Singleton bean that instantiates nested children contexts by the give resources.
  * The error handling is strict during instantiation of nested contexts.
  * @author Alexey Olenev
  *

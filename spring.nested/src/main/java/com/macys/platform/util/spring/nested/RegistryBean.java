@@ -10,8 +10,19 @@ import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
-import com.jamonapi.proxy.MonProxyFactory;
-
+/**
+ * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
+ * Reserved http://www.griddynamics.com
+ * 
+ * For information about the licensing and copyright of this document please
+ * contact Grid Dynamics at info@griddynamics.com.
+ * 
+ * $Id: $
+ * 
+ * @Project: Spring Nested
+ * @Description: 
+ * 
+ */
 public class RegistryBean implements Registry {
 
 	final class ExportBeanTargetSource extends AbstractBeanFactoryBasedTargetSource {
@@ -27,20 +38,7 @@ public class RegistryBean implements Registry {
 	}
 
 	private Map<String,ExportRef> exports = new LinkedHashMap<String, ExportRef>();
-	private boolean tryEagerResolve=false;
-	private boolean lookupMonitored=false;
 	
-	public boolean isTryEagerResolve() {
-		return tryEagerResolve;
-	}
-
-	public void setTryEagerResolve(boolean tryEagerResolve) {
-		this.tryEagerResolve = tryEagerResolve;
-	}
-
-    public void setLookupMonitored(final boolean lookupMonitored){
-        this.lookupMonitored=lookupMonitored;
-    }//setLookupMonitored
 
     public Void export(ExportRef ref) {
 		ExportRef senior = exports.put(ref.getTarget(), ref);
@@ -51,7 +49,7 @@ public class RegistryBean implements Registry {
     @SuppressWarnings("unchecked")
     public <T> T lookup(final String name, final Class<T> clazz) {
 		ExportRef ref = exports.get(name);
-		if (tryEagerResolve && ref != null) {
+		if (/*tryEagerResolve*/ false && ref != null) {
 			return resolve(name, clazz, ref);
 		} else {
 			return (T) ProxyFactory.getProxy(clazz, new ExportBeanTargetSource(clazz, name));
@@ -78,11 +76,8 @@ public class RegistryBean implements Registry {
 			throw new BeanNotOfRequiredTypeException(name, clazz, ref.getInterfaceClass());
 		}
 		Object bean=ref.getBeanFactory().getBean(name,clazz);
-		if(lookupMonitored){
-            return (T)MonProxyFactory.monitor(bean,clazz);
-        }else{
+		
             return (T)bean;
-        }//if
 	}
 
 }//RegistryBean

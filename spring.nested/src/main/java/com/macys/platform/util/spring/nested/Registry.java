@@ -2,9 +2,17 @@ package com.macys.platform.util.spring.nested;
 
 import java.util.Collection;
 
-
 /**
- * Registry for export and import services by name with a constraint by 
+ * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
+ * Reserved http://www.griddynamics.com
+ * 
+ * For information about the licensing and copyright of this document please
+ * contact Grid Dynamics at info@griddynamics.com.
+ * 
+ * $Id: $
+ * 
+ * @Project: Spring Nested
+ * @Description: Registry for export and import services by name with a constraint by 
  * an interface.   
  * The singleton bean implements this interface instantiated by the root context and available 
  * for the nested children context via intrinsic Spring feature "parent context". 
