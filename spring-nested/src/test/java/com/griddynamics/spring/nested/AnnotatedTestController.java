@@ -11,7 +11,7 @@ public class AnnotatedTestController {
     public ModelAndView annotationTest()  {
         String message = "Hello Spring MVC";
 
-        ModelAndView modelAndView = new ModelAndView("annotation-test");
+        ModelAndView modelAndView = new ModelAndView("testView");
         modelAndView.addObject("message", message);
 
         return modelAndView;

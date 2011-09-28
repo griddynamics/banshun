@@ -12,7 +12,7 @@ public class TestController implements Controller {
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String message = "Hello Spring MVC";
 
-        ModelAndView modelAndView = new ModelAndView("nested-controller-test");
+        ModelAndView modelAndView = new ModelAndView("testView");
         modelAndView.addObject("message", message);
 
         return modelAndView;

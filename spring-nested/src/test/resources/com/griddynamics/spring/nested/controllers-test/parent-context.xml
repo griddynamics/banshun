@@ -6,8 +6,7 @@
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
     <bean id="beanNameResolver" class="org.springframework.web.servlet.view.BeanNameViewResolver"/>
-    <bean id="nested-controller-test" class="com.griddynamics.spring.nested.TestView"/>
-    <bean id="annotation-test" class="com.griddynamics.spring.nested.TestView"/>
+    <bean id="testView" class="com.griddynamics.spring.nested.TestView"/>
 
     <bean name="root" class="com.griddynamics.spring.nested.ContextParentBean">
         <property name="configLocation" value="classpath:/com/griddynamics/spring/nested/controllers-test/child-context.xml" />
