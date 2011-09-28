@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+    <bean name="/nested-controller-test.html" class="com.griddynamics.spring.nested.NestedController"/>
+    <bean factory-bean="root-handler-mapping" factory-method="registerByName" lazy-init="false">
+        <constructor-arg>
+            <idref bean="/nested-controller-test.html"/>
+        </constructor-arg>
+        <constructor-arg ref="/nested-controller-test.html"/>
+    </bean>
+
+    <bean name="annotation-test" class="com.griddynamics.spring.nested.AnnotatedTestController"/>
+    <bean factory-bean="root-handler-mapping" factory-method="registerByAnnotation" lazy-init="false">
+        <constructor-arg ref="annotation-test"/>
+    </bean>
+
+    <bean name="/handler-test.html" class="com.griddynamics.spring.nested.NestedHandler"/>
+    <bean factory-bean="root-handler-mapping" factory-method="registerByName" lazy-init="false">
+        <constructor-arg>
+            <idref bean="/handler-test.html"/>
+        </constructor-arg>
+        <constructor-arg ref="/handler-test.html"/>
+    </bean>
+
+</beans>
