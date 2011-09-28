@@ -30,11 +30,11 @@ public class RegistryBeanTest extends TestCase {
 	public void testExact()	{
 }
 	public void tOstExact()	{
-		check("test/resources/com/griddynamics/spring/nested/exact-match-import.xml");
+		check("com/griddynamics/spring/nested/exact-match-import.xml");
 	}
 
 	public void tOstWider()	{
-		check("test/resources/com/griddynamics/spring/nested/coarse-import.xml");
+		check("com/griddynamics/spring/nested/coarse-import.xml");
 	}
 
 	public void tOstTooConcreteImport()
@@ -71,7 +71,7 @@ public class RegistryBeanTest extends TestCase {
 	}
 	
 	public void tOstWrongExport(){
-		ApplicationContext ctx = new ClassPathXmlApplicationContext("test/resources/com/griddynamics/spring/nested/wrong-export-class.xml");
+		ApplicationContext ctx = new ClassPathXmlApplicationContext("com/griddynamics/spring/nested/wrong-export-class.xml");
 		
 		Object bean ;
 		try{

@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class NestedController implements org.springframework.web.servlet.mvc.Controller {
+public class NestedController implements Controller {
     public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String message = "Hello Spring MVC";
 
