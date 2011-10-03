@@ -2,6 +2,7 @@ package com.griddynamics.spring.nested;
 
 import java.lang.reflect.Proxy;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.springframework.beans.factory.BeanCreationException;
@@ -43,31 +44,31 @@ public class RegistryBeanTest extends TestCase {
 		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("com/macys/platform/util/spring/nested/illegal-concrete-import.xml");
 		Registry registry = (Registry)ctx.getBean("root", Registry.class);
 		// checking laziness 
-		assertTrue("have no exports due to laziness",hasNoExports(ctx));
+		Assert.assertTrue("have no exports due to laziness", hasNoExports(ctx));
 		Object proxy = ctx.getBean("early-import");
 		// force export
 		ctx.getBean("export-declaration");
 		// we have export here
-		assertTrue("we have only parent interface export declaration", 
-				registry.lookupByInterface(ExtendedChild.class).isEmpty() && 
-				registry.lookupByInterface(NarrowDaddy.class).contains("just-bean"));
+		Assert.assertTrue("we have only parent interface export declaration",
+                registry.lookupByInterface(ExtendedChild.class).isEmpty() &&
+                        registry.lookupByInterface(NarrowDaddy.class).contains("just-bean"));
 		
 		try{// target is ready here, but types does not match
 			proxy.toString();
 		}catch(BeanNotOfRequiredTypeException e){
-			assertEquals("just-bean",e.getBeanName());
+			Assert.assertEquals("just-bean", e.getBeanName());
 			
 			try{
 				ctx.getBean("late-import").toString();
 			}catch(BeanCreationException ee){
-				assertEquals("late-import",ee.getBeanName());
+				Assert.assertEquals("late-import", ee.getBeanName());
 				return;
 			}
-			fail("we should have BeanCreactionException here");
+			Assert.fail("we should have BeanCreactionException here");
 			
 			return;
 		}
-		fail("we should have BeanNotOfRequiredTypeException here");
+		Assert.fail("we should have BeanNotOfRequiredTypeException here");
 	}
 	
 	public void tOstWrongExport(){
@@ -82,9 +83,9 @@ public class RegistryBeanTest extends TestCase {
 			}catch(Exception ee){
 				return;
 			}
-			fail("we should have an Exception here.");
+			Assert.fail("we should have an Exception here.");
 		}
-		fail("we should have an Exception here");
+		Assert.fail("we should have an Exception here");
 		return;
 	}
 	
@@ -92,28 +93,28 @@ public class RegistryBeanTest extends TestCase {
 		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(configLocation);
 		
 		// checking laziness 
-		assertTrue("have no exports due to laziness",hasNoExports(ctx));
+		Assert.assertTrue("have no exports due to laziness", hasNoExports(ctx));
 		
 		Object proxy = ctx.getBean("early-import");
 		try{
 			proxy.toString();
-			fail("attempt to invoke proxy without export should lead to exception");
+			Assert.fail("attempt to invoke proxy without export should lead to exception");
 		}catch(NoSuchBeanDefinitionException e)
-		{	assertEquals("invoke bean without proper export","just-bean", e.getBeanName());			
+		{	Assert.assertEquals("invoke bean without proper export", "just-bean", e.getBeanName());
 		}
 		// force export
 		ctx.getBean("export-declaration");
-		assertSame(proxy, ctx.getBean("early-import"));
-		assertTrue("have export ref",hasExport(ctx, "just-bean"));
+		Assert.assertSame(proxy, ctx.getBean("early-import"));
+		Assert.assertTrue("have export ref", hasExport(ctx, "just-bean"));
 		
-		assertEquals("proxies should refer the same bean instance",proxy.toString(), 
-				ctx.getBean("late-import").toString());
-		assertNotSame("proxy and bean can't be identical",proxy, 
-				ctx.getBean("late-import"));
-		assertSame("late import resolved to a bean instance itself",ctx.getBean("late-import"), 
-				ctx.getBean("just-bean"));
-		assertTrue("early import gives us a proxy",proxy instanceof Proxy);
-		assertFalse("late import Does NoT give us a proxy",ctx.getBean("late-import") instanceof Proxy);
+		Assert.assertEquals("proxies should refer the same bean instance", proxy.toString(),
+                ctx.getBean("late-import").toString());
+		Assert.assertNotSame("proxy and bean can't be identical", proxy,
+                ctx.getBean("late-import"));
+		Assert.assertSame("late import resolved to a bean instance itself", ctx.getBean("late-import"),
+                ctx.getBean("just-bean"));
+		Assert.assertTrue("early import gives us a proxy", proxy instanceof Proxy);
+		Assert.assertFalse("late import Does NoT give us a proxy", ctx.getBean("late-import") instanceof Proxy);
 	}
 
 	private boolean hasExport(ClassPathXmlApplicationContext ctx, String bean) {

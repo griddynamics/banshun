@@ -43,23 +43,6 @@ import org.slf4j.Logger;
  * intended for the current usage
  */
 public class ContextParentBean implements InitializingBean, ApplicationContextAware, Registry, DisposableBean {
-
-    public static final class SingleResourceWebChildContext extends
-            XmlWebApplicationContext {
-
-        private Resource res;
-
-        SingleResourceWebChildContext(Resource res, ApplicationContext parent) {
-            this.res = res;
-            setParent(parent);
-            refresh();
-        }
-
-        protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {
-            reader.loadBeanDefinitions(res);
-        }
-    }
-
     private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
     private Map<String, Exception> nestedContextsExceptions = new LinkedHashMap<String, Exception>();
 
@@ -127,15 +110,13 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     private ConfigurableApplicationContext createChildContext(Resource res, ApplicationContext parent) throws Exception {
         if (childApplicationContextClassName != null && childApplicationContextClassName.length() > 0) {
             try {
-                Class applicationContextClass = Class.forName(childApplicationContextClassName);
-                Constructor constructor = applicationContextClass.getConstructor(new Class[]{String[].class, ApplicationContext.class});
-                return (ConfigurableApplicationContext) constructor.newInstance(new String[]{res.getURL().toString()}, parent);
+                return (ConfigurableApplicationContext) parent.getBean(childApplicationContextClassName, res, parent);
             } catch (Exception e) {
                 log.warn("Can not initialize ApplicationContext " + childApplicationContextClassName + " with configuration location " + res.getURL(), e);
             }
         }
 
-        return new SingleResourceWebChildContext(res, parent);
+        return new SingleResourceXmlChildContext(res, parent);
     }
 
     public Map<String, Exception> getNestedContextsExceptions() {

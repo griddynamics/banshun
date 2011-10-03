@@ -1,4 +1,4 @@
-package com.griddynamics.spring.nested;
+package com.griddynamics.spring.nested.web;
 
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights

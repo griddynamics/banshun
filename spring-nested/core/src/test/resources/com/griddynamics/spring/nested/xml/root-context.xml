@@ -14,6 +14,8 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <bean id="childContextPrototype" class="com.griddynamics.spring.nested.SingleResourceXmlChildContext" scope="prototype"/>
+
     <bean name="root" class="com.griddynamics.spring.nested.StrictContextParentBean">
         <property name="configLocation" value="
                 /com/griddynamics/spring/nested/analyzer/export-context.xml
@@ -23,6 +25,6 @@
             <bean class="com.griddynamics.spring.nested.RegistryBean" />
         </property>
         <property name="strictErrorHandling" value="true" />
-        <property name="childApplicationContextClassName" value="org.springframework.context.support.ClassPathXmlApplicationContext"/>
+        <property name="childApplicationContextClassName" value="childContextPrototype"/>
     </bean>
 </beans>

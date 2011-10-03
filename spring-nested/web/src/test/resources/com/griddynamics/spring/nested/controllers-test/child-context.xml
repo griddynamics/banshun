@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights Reserved
+  http://www.griddynamics.com
+
+  For information about the licensing and copyright of this document please
+  contact Grid Dynamics at info@griddynamics.com.
+
+  $Id: $
+  @Project:     Spring Nested
+  @Description:
+ -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-    <bean name="/nested-controller-test.html" class="com.griddynamics.spring.nested.NestedController"/>
+    <bean name="/nested-controller-test.html" class="com.griddynamics.spring.nested.web.NestedController"/>
     <bean factory-bean="root-handler-mapping" factory-method="registerByName" lazy-init="false">
         <constructor-arg>
             <idref bean="/nested-controller-test.html"/>
@@ -13,12 +24,12 @@
         <constructor-arg ref="/nested-controller-test.html"/>
     </bean>
 
-    <bean name="annotation-test" class="com.griddynamics.spring.nested.AnnotatedTestController"/>
+    <bean name="annotation-test" class="com.griddynamics.spring.nested.web.AnnotatedTestController"/>
     <bean factory-bean="root-handler-mapping" factory-method="registerByAnnotation" lazy-init="false">
         <constructor-arg ref="annotation-test"/>
     </bean>
 
-    <bean name="/handler-test.html" class="com.griddynamics.spring.nested.NestedHandler"/>
+    <bean name="/handler-test.html" class="com.griddynamics.spring.nested.web.NestedHandler"/>
     <bean factory-bean="root-handler-mapping" factory-method="registerByName" lazy-init="false">
         <constructor-arg>
             <idref bean="/handler-test.html"/>

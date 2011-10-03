@@ -1,4 +1,4 @@
-package com.griddynamics.spring.nested;
+package com.griddynamics.spring.nested.web;
 
 import java.util.Collection;
 import java.util.Map;

@@ -40,7 +40,7 @@
         <dependencies>
             <dependency>
                 <groupId>com.griddynamics.springnested</groupId>
-                <artifactId>core</artifactId>
+                <artifactId>spring-nested-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -48,12 +48,6 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-webmvc</artifactId>
                 <version>${spring.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging-api</artifactId>
-                <scope>provided</scope>
-                <version>${commonsLogging.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>

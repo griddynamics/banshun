@@ -1,8 +1,9 @@
-package com.griddynamics.spring.nested;
+package com.griddynamics.spring.nested.web;
 
 import java.util.Arrays;
 import java.util.List;
 
+import com.griddynamics.spring.nested.Registry;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.HttpRequestHandler;

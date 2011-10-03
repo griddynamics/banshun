@@ -20,23 +20,18 @@
         <version>2.3.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>web</artifactId>
+    <artifactId>spring-nested-web</artifactId>
     <name>${project.parent.artifactId}.${project.artifactId}</name>
 
     <dependencies>
         <dependency>
             <groupId>com.griddynamics.springnested</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>spring-nested-core</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging-api</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -48,7 +43,6 @@
             <artifactId>slf4j-api</artifactId>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>

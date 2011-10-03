@@ -1,6 +1,7 @@
 package com.griddynamics.spring.nested;
 
 import org.junit.Test;
+import junit.framework.Assert;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,8 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static junit.framework.Assert.assertEquals;
 
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
@@ -62,9 +61,9 @@ public class DependencySorterTest {
     }
 
     private void checkLocations(String[] locations1, String[] locations2) {
-        assertEquals(locations1.length, locations2.length);
+        Assert.assertEquals(locations1.length, locations2.length);
         for (int i = 0; i < locations1.length; i++) {
-            assertEquals(locations1[i], locations2[i]);
+            Assert.assertEquals(locations1[i], locations2[i]);
         }
     }
 

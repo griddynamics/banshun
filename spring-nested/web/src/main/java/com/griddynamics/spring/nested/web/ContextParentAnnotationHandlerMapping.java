@@ -1,4 +1,4 @@
-package com.griddynamics.spring.nested;
+package com.griddynamics.spring.nested.web;
 
 import java.util.ArrayList;
 import java.util.HashMap;
