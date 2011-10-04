@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights Reserved
+  http://www.griddynamics.com
+
+  For information about the licensing and copyright of this document please
+  contact Grid Dynamics at info@griddynamics.com.
+
+  $Id: $
+  @Project:     Spring Nested
+  @Description:
+ -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+    <bean id="beanNameResolver" class="org.springframework.web.servlet.view.BeanNameViewResolver"/>
+    <bean id="testView" class="com.griddynamics.spring.nested.web.View"/>
+
+    <bean id="childContextPrototype" class="com.griddynamics.spring.nested.web.SingleResourceWebChildContext" scope="prototype"/>
+
+    <bean name="root" class="com.griddynamics.spring.nested.ContextParentBean">
+        <property name="configLocation" value="classpath:/com/griddynamics/spring/nested/controllers-test/child-context.xml" />
+        <property name="registry">
+            <bean class="com.griddynamics.spring.nested.RegistryBean" />
+        </property>
+        <property name="strictErrorHandling" value="true" />
+        <property name="childApplicationContextClassName" value="childContextPrototype"/>
+    </bean>
+
+    <bean id="root-handler-mapping" class="com.griddynamics.spring.nested.web.ContextParentAnnotationHandlerMapping"/>
+</beans>
