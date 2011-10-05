@@ -16,9 +16,9 @@ import org.springframework.web.servlet.DispatcherServlet;
  * @Description:
  *
  */
-public class Servlet extends DispatcherServlet {
+public class ScanServlet extends DispatcherServlet {
     @Override
     protected void postProcessWebApplicationContext(ConfigurableWebApplicationContext wac) {
-        wac.setConfigLocation("classpath:/com/griddynamics/spring/nested/controllers-test/parent-context.xml");
+        wac.setConfigLocation("classpath:/com/griddynamics/spring/nested/scan-test/parent-context.xml");
     }
 }

@@ -20,7 +20,7 @@ import org.mortbay.jetty.testing.ServletTester;
  * @Description:
  *
  */
-public class NestedControllerTest {
+public class ScanningTest {
     private ServletTester tester;
     private HttpTester request;
     private HttpTester response;
@@ -28,7 +28,7 @@ public class NestedControllerTest {
     @Before
     public void init() throws Exception {
         tester = new ServletTester();
-        tester.addServlet(ContextServlet.class, "*.html");
+        tester.addServlet(ScanServlet.class, "*.html");
         tester.start();
     }
 

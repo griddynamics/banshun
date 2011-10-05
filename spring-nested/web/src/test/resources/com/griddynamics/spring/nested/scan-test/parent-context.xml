@@ -30,6 +30,5 @@
         <property name="childApplicationContextClassName" value="childContextPrototype"/>
     </bean>
 
-    <bean id="root-handler-mapping" class="com.griddynamics.spring.nested.web.ContextParentAnnotationHandlerMapping"/>
-
+    <bean id="root-handler-mapping" class="com.griddynamics.spring.nested.web.ScanChildrenHandlerMapping"/>
 </beans>
