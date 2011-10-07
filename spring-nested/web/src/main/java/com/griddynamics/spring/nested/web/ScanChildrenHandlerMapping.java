@@ -1,15 +1,18 @@
 package com.griddynamics.spring.nested.web;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import com.griddynamics.spring.nested.ContextParentBean;
-import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping;
-import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
+import org.springframework.core.OrderComparator;
+import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.servlet.handler.AbstractUrlHandlerMapping;
 
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
@@ -33,47 +36,59 @@ public class ScanChildrenHandlerMapping extends ContextParentAnnotationHandlerMa
         ContextParentBean parentBean = context.getBean(com.griddynamics.spring.nested.ContextParentBean.class);
         List<ConfigurableApplicationContext> children = parentBean.getChildren();
         for (ConfigurableApplicationContext child : children) {
-            registerHandlersFromContext(child);
+            getHandlerMappingsAndRegisterHandlers(child);
         }
     }
 
-    public void registerHandlersFromContext(ApplicationContext context) {
-        for (String beanDefName : context.getBeanDefinitionNames()) {
-            try {
-                checkAndRegisterHandler(context.getBean(beanDefName), context);
-                System.out.println(beanDefName);
-            } catch (BeansException ex) {
-                logger.info(ex.getMessage(), ex);
+    public void getHandlerMappingsAndRegisterHandlers(ApplicationContext context) {
+        Map<String, HandlerMapping> matchingBeans =
+                BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HandlerMapping.class, true, false);
+
+        List<HandlerMapping> handlerMappings = null;
+        if (!matchingBeans.isEmpty()) {
+            handlerMappings = new ArrayList<HandlerMapping>(matchingBeans.values());
+            OrderComparator.sort(handlerMappings);
+            registerHandlers(handlerMappings);
+        }
+
+        if (handlerMappings == null || handlerMappings.size() == 1) {
+            handlerMappings = getDefaultHandlerMappings(context);
+            if (logger.isDebugEnabled()) {
+                logger.debug("No HandlerMappings found in context '" + context.getDisplayName() + "': using default");
             }
+            registerHandlers(handlerMappings);
         }
-        registerHandlersFromSimpleUrlHandlerMappings(context);
     }
 
-    public void checkAndRegisterHandler(Object object, ApplicationContext context) {
-        if (isUrlAnnotatedBean(object)) {
-            registerByAnnotation(object);
-            return;
-        }
-
-        BeanNameUrlHandlerMapping beanNameMapping = new BeanNameUrlHandlerMapping();
-        beanNameMapping.setApplicationContext(context);
-        if (beanNameMapping.getHandlerMap().containsValue(object)) {
-            for (String name : beanNameMapping.getHandlerMap().keySet()) {
-                if (beanNameMapping.getHandlerMap().get(name).equals(object)) {
-                    registerByName(name, object);
-                    return;
+    private void registerHandlers(List<HandlerMapping> handlerMappings) {
+        for (HandlerMapping mapping : handlerMappings) {
+            AbstractUrlHandlerMapping abstractUrlHandlerMapping = (AbstractUrlHandlerMapping) mapping;
+            Map<String, Object> handlerMap = abstractUrlHandlerMapping.getHandlerMap();
+            for (String beanName : handlerMap.keySet()) {
+                Object handler = handlerMap.get(beanName);
+                if (isUrlAnnotatedBean(handler)) {
+                    registerByAnnotation(handler);
+                } else {
+                    registerByName(beanName, handler);
                 }
             }
         }
     }
 
-    public void registerHandlersFromSimpleUrlHandlerMappings(ApplicationContext context) {
-        Map<String, SimpleUrlHandlerMapping> handlerMappings = context.getBeansOfType(org.springframework.web.servlet.handler.SimpleUrlHandlerMapping.class);
-        for (String name : handlerMappings.keySet()) {
-            SimpleUrlHandlerMapping handlerMapping = handlerMappings.get(name);
-            for (String url : handlerMapping.getUrlMap().keySet()) {
-                registerByName(url, context.getBean((String) handlerMapping.getUrlMap().get(url)));
-            }
+    private List<HandlerMapping> getDefaultHandlerMappings(ApplicationContext context) {
+        List<HandlerMapping> handlerMappings = new ArrayList<HandlerMapping>(2);
+        try {
+            Object handlerMapping =
+                    context.getAutowireCapableBeanFactory().createBean(org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping.class);
+            handlerMappings.add((HandlerMapping) handlerMapping);
+
+            handlerMapping =
+                    context.getAutowireCapableBeanFactory().createBean(org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping.class);
+            handlerMappings.add((HandlerMapping) handlerMapping);
+        } catch (Exception ex) {
+            throw new BeanInitializationException(ex.getMessage(), ex);
         }
+
+        return handlerMappings;
     }
 }

@@ -20,14 +20,4 @@
 
     <bean name="annotation-test" class="com.griddynamics.spring.nested.web.AnnotatedTestController"/>
 
-    <bean name="handler" class="com.griddynamics.spring.nested.web.NestedHandler"/>
-
-    <bean name="mapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
-        <property name="mappings">
-            <value>
-                /handler-test.html=handler
-            </value>
-        </property>
-    </bean>
-
 </beans>
