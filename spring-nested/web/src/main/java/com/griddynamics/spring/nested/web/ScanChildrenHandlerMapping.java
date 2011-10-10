@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.griddynamics.spring.nested.ContextParentBean;
+import com.griddynamics.spring.nested.Registry;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.InitializingBean;
@@ -28,11 +29,14 @@ import org.springframework.web.servlet.handler.AbstractUrlHandlerMapping;
  */
 public class ScanChildrenHandlerMapping extends ContextParentAnnotationHandlerMapping implements InitializingBean {
     private static final Class[] defaultHandlerMappingClasses = new Class[] {org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping.class, org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping.class};
+    private Registry parentBean = null;
+
+    public void setParentBean(Registry parentBean) {
+        this.parentBean = parentBean;
+    }
 
     public void afterPropertiesSet() throws Exception {
-        ApplicationContext context = getApplicationContext();
-        ContextParentBean parentBean = context.getBean(com.griddynamics.spring.nested.ContextParentBean.class);
-        List<ConfigurableApplicationContext> children = parentBean.getChildren();
+        List<ConfigurableApplicationContext> children = ((ContextParentBean)parentBean).getChildren();
         for (ConfigurableApplicationContext child : children) {
             createHandlerMappingsAndRegisterHandlers(child);
         }
