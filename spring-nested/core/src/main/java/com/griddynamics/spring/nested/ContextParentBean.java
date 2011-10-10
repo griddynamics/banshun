@@ -53,6 +53,8 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     private boolean strictErrorHandling = false;
     private String childApplicationContextClassName = null;
 
+    private String[] fireOnly = null;
+
     /**
      * specifies whether initialization of this bean failed if one of the nested children contexts
      * failed to build.
@@ -73,6 +75,10 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
 
     public void setRegistry(Registry registry) {
         this.registry = registry;
+    }
+
+    public void setFireOnly(String[] fireOnly) {
+        this.fireOnly = fireOnly;
     }
 
     /**

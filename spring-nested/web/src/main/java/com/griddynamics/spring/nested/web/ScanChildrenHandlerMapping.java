@@ -1,7 +1,6 @@
 package com.griddynamics.spring.nested.web;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,10 +29,6 @@ import org.springframework.web.servlet.handler.AbstractUrlHandlerMapping;
 public class ScanChildrenHandlerMapping extends ContextParentAnnotationHandlerMapping implements InitializingBean {
     private static final Class[] defaultHandlerMappingClasses = new Class[] {org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping.class, org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping.class};
 
-    public boolean isUrlAnnotatedBean(Object object) {
-        return determineUrlsByAnnotations(object) != null;
-    }
-
     public void afterPropertiesSet() throws Exception {
         ApplicationContext context = getApplicationContext();
         ContextParentBean parentBean = context.getBean(com.griddynamics.spring.nested.ContextParentBean.class);
@@ -47,10 +42,10 @@ public class ScanChildrenHandlerMapping extends ContextParentAnnotationHandlerMa
         Map<String, HandlerMapping> matchingBeans =
                 BeanFactoryUtils.beansOfTypeIncludingAncestors(child, HandlerMapping.class, true, false);
 
-        List<HandlerMapping> handlerMappings = new ArrayList<HandlerMapping>(matchingBeans.values());;
+        List<HandlerMapping> handlerMappings = new ArrayList<HandlerMapping>(matchingBeans.values());
         OrderComparator.sort(handlerMappings);
-
-        if (handlerMappings.size() == 1) {
+        handlerMappings.remove(this);
+        if (handlerMappings.isEmpty()) {
             handlerMappings = createDefaultHandlerMappings(child);
             if (logger.isDebugEnabled()) {
                 logger.debug("No HandlerMappings found in context '" + child.getDisplayName() + "': using default");
@@ -60,19 +55,13 @@ public class ScanChildrenHandlerMapping extends ContextParentAnnotationHandlerMa
     }
 
     private void registerHandlers(List<HandlerMapping> handlerMappings) {
-        Map<String, Object> allHandlersMap = new HashMap<String, Object>();
         for (HandlerMapping mapping : handlerMappings) {
             AbstractUrlHandlerMapping abstractUrlHandlerMapping = (AbstractUrlHandlerMapping) mapping;
-            allHandlersMap.putAll(abstractUrlHandlerMapping.getHandlerMap());
-        }
-
-        for (String beanName : allHandlersMap.keySet()) {
-            Object handler = allHandlersMap.get(beanName);
-            if (isUrlAnnotatedBean(handler)) {
-                registerByAnnotation(handler);
-            } else {
-                registerByName(beanName, handler);
-            }
+            Map<String, Object> handlerMap = abstractUrlHandlerMapping.getHandlerMap();
+            for (String url : handlerMap.keySet()) {
+                Object handler = handlerMap.get(url);
+                registerHandler(url, handler);
+             }
         }
     }
 
