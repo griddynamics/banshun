@@ -6,6 +6,8 @@ import static org.junit.Assert.*;
 
 import org.mortbay.jetty.testing.HttpTester;
 import org.mortbay.jetty.testing.ServletTester;
+import org.springframework.web.context.support.XmlWebApplicationContext;
+import org.springframework.web.servlet.FrameworkServlet;
 
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
@@ -28,7 +30,11 @@ public class NestedControllerTest {
     @Before
     public void init() throws Exception {
         tester = new ServletTester();
-        tester.addServlet(ContextServlet.class, "*.html");
+        XmlWebApplicationContext wac;
+        tester.setAttribute(Servlet.springCtxAttrName, wac = (XmlWebApplicationContext) FrameworkServlet.DEFAULT_CONTEXT_CLASS.newInstance());
+        wac.setConfigLocation("classpath:/com/griddynamics/spring/nested/controllers-test/parent-context.xml");
+        wac.refresh();
+        tester.addServlet(Servlet.class, "*.html");
         tester.start();
     }
 
@@ -42,8 +48,10 @@ public class NestedControllerTest {
     @Test
     public void annotatedControllerTest() throws Exception {
         doTest("/annotation-test.html");
-
         assertEquals("{message=Hello Spring MVC}", response.getContent());
+
+        doTest("/another-annotation-test.html");
+        assertEquals("{message=Hello Another Spring MVC}", response.getContent());
     }
 
     @Test

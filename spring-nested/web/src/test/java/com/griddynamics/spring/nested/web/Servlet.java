@@ -1,6 +1,5 @@
 package com.griddynamics.spring.nested.web;
 
-import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
@@ -16,9 +15,10 @@ import org.springframework.web.servlet.DispatcherServlet;
  * @Description:
  *
  */
-public class ScanServlet extends DispatcherServlet {
-    @Override
-    protected void postProcessWebApplicationContext(ConfigurableWebApplicationContext wac) {
-        wac.setConfigLocation("classpath:/com/griddynamics/spring/nested/scan-test/parent-context.xml");
+public class Servlet extends DispatcherServlet {
+    public static final String springCtxAttrName = "springContextAttrName";
+
+    public Servlet() {
+        setContextAttribute(springCtxAttrName);
     }
 }
