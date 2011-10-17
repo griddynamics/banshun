@@ -29,4 +29,14 @@ public class AnnotatedTestController {
 
         return modelAndView;
     }
+
+    @RequestMapping("/another-annotation-test.html")
+    public ModelAndView anotherAnnotationTest()  {
+        String message = "Hello Another Spring MVC";
+
+        ModelAndView modelAndView = new ModelAndView("testView");
+        modelAndView.addObject("message", message);
+
+        return modelAndView;
+    }
 }

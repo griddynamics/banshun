@@ -1,7 +1,6 @@
 package com.griddynamics.spring.nested;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,7 +11,6 @@ import java.util.Map;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -55,6 +53,8 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     private boolean strictErrorHandling = false;
     private String childApplicationContextClassName = null;
 
+    private String[] fireOnly = null;
+
     /**
      * specifies whether initialization of this bean failed if one of the nested children contexts
      * failed to build.
@@ -75,6 +75,10 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
 
     public void setRegistry(Registry registry) {
         this.registry = registry;
+    }
+
+    public void setFireOnly(String[] fireOnly) {
+        this.fireOnly = fireOnly;
     }
 
     /**

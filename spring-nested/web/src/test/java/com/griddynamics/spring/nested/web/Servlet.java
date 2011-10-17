@@ -1,6 +1,5 @@
 package com.griddynamics.spring.nested.web;
 
-import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
@@ -17,8 +16,9 @@ import org.springframework.web.servlet.DispatcherServlet;
  *
  */
 public class Servlet extends DispatcherServlet {
-    @Override
-    protected void postProcessWebApplicationContext(ConfigurableWebApplicationContext wac) {
-        wac.setConfigLocation("classpath:/com/griddynamics/spring/nested/controllers-test/parent-context.xml");
+    public static final String springCtxAttrName = "springContextAttrName";
+
+    public Servlet() {
+        setContextAttribute(springCtxAttrName);
     }
 }

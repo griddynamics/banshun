@@ -22,7 +22,7 @@ import org.springframework.web.servlet.FrameworkServlet;
  * @Description:
  *
  */
-public class NestedControllerTest {
+public class ScanningTest {
     private ServletTester tester;
     private HttpTester request;
     private HttpTester response;
@@ -32,7 +32,7 @@ public class NestedControllerTest {
         tester = new ServletTester();
         XmlWebApplicationContext wac;
         tester.setAttribute(Servlet.springCtxAttrName, wac = (XmlWebApplicationContext) FrameworkServlet.DEFAULT_CONTEXT_CLASS.newInstance());
-        wac.setConfigLocation("classpath:/com/griddynamics/spring/nested/controllers-test/parent-context.xml");
+        wac.setConfigLocation("classpath:/com/griddynamics/spring/nested/scan-test/parent-context.xml");
         wac.refresh();
         tester.addServlet(Servlet.class, "*.html");
         tester.start();
