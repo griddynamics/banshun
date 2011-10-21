@@ -8,6 +8,9 @@ import org.mortbay.jetty.testing.HttpTester;
 import org.mortbay.jetty.testing.ServletTester;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 import org.springframework.web.servlet.FrameworkServlet;
+import org.springframework.web.servlet.view.AbstractView;
+
+import java.lang.reflect.Proxy;
 
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights

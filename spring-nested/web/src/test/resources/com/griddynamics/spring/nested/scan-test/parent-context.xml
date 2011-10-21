@@ -28,7 +28,7 @@
             <bean class="com.griddynamics.spring.nested.RegistryBean" />
         </property>
         <property name="strictErrorHandling" value="true" />
-        <property name="childApplicationContextClassName" value="childContextPrototype"/>
+        <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>
 
     <bean id="root-handler-mapping" class="com.griddynamics.spring.nested.web.ScanChildrenHandlerMapping">

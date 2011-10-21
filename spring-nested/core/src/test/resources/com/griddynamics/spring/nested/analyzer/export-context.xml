@@ -18,10 +18,10 @@
            http://www.griddynamics.com/schema/nested http://www.griddynamics.com/schema/nested/nested-schema.xsd
        ">
     
-    <bean name="firstObject" class="com.griddynamics.spring.nested.analyzer.TransportObject" />
-    <bean name="secondObject" class="com.griddynamics.spring.nested.analyzer.TransportObject" />
-    <bean name="thirdObject" class="com.griddynamics.spring.nested.analyzer.TransportObject" />
-    <bean name="fourthObject" class="com.griddynamics.spring.nested.analyzer.TransportObject" />
+    <bean name="firstObject" class="com.griddynamics.spring.nested.analyzer.TransportObject" lazy-init="true"/>
+    <bean name="secondObject" class="com.griddynamics.spring.nested.analyzer.TransportObject" lazy-init="true"/>
+    <bean name="thirdObject" class="com.griddynamics.spring.nested.analyzer.TransportObject" lazy-init="true"/>
+    <bean name="fourthObject" class="com.griddynamics.spring.nested.analyzer.TransportObject" lazy-init="true"/>
 
     
     <nested:export ref="firstObject" interface="com.griddynamics.spring.nested.analyzer.SuperInterface"/>

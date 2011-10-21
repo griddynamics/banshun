@@ -11,31 +11,52 @@
   @Description: 
  -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"
-	default-lazy-init="true"
-	>
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"
+       default-lazy-init="true"
+        >
+
+    <bean id="childContextPrototype" class="com.griddynamics.spring.nested.SingleResourceXmlChildContext" scope="prototype"/>
+    <bean name="root" class="com.griddynamics.spring.nested.StrictContextParentBean">
+        <property name="configLocation" value=""/>
+        <property name="registry">
+            <bean class="com.griddynamics.spring.nested.RegistryBean" />
+        </property>
+        <property name="strictErrorHandling" value="true" />
+        <property name="childContextPrototype" value="childContextPrototype"/>
+    </bean>
+
+    <bean id="proxyCreator" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <property name="customTargetSourceCreators" >
+            <bean class="com.griddynamics.spring.nested.NestedTargetSourceCreator"/>
+        </property>
+        <property name="beanNames">
+            <list>
+                <value>just*</value>
+            </list>
+        </property>
+    </bean>
 
 
-	<bean id="root" class="com.griddynamics.spring.nested.RegistryBean"  ></bean>
-	
-	<bean name="export-declaration" factory-bean="root" factory-method="export" depends-on="early-import" >
-		<constructor-arg> <bean class="com.griddynamics.spring.nested.ExportRef">
-			<constructor-arg><idref local="just-bean"/></constructor-arg>
-			<constructor-arg value="com.griddynamics.spring.nested.ExtendedChild"></constructor-arg>
-		</bean></constructor-arg>
-	</bean>
-	
-	<bean id="just-bean" class="com.griddynamics.spring.nested.Bean"></bean>
-	
-	<bean name="early-import" factory-bean="root" factory-method="lookup" >
-		<constructor-arg ><idref local="just-bean"/></constructor-arg>
-		<constructor-arg value="com.griddynamics.spring.nested.ExtendedChild"></constructor-arg>
-	</bean>
-	
-	<bean name="late-import" factory-bean="root" factory-method="lookup" depends-on="export-declaration" >
-		<constructor-arg ><idref local="just-bean"/></constructor-arg>
-		<constructor-arg value="com.griddynamics.spring.nested.ExtendedChild"></constructor-arg>
-	</bean>
-	
+    <bean name="export-declaration" factory-bean="root" factory-method="export" depends-on="early-import">
+        <constructor-arg>
+            <bean class="com.griddynamics.spring.nested.ExportRef">
+                <constructor-arg> <idref local="just-bean"/> </constructor-arg>
+                <constructor-arg value="com.griddynamics.spring.nested.ExtendedChild"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="just-bean" class="com.griddynamics.spring.nested.Bean"/>
+
+    <bean name="early-import" factory-bean="root" factory-method="lookup">
+        <constructor-arg> <idref local="just-bean"/> </constructor-arg>
+        <constructor-arg value="com.griddynamics.spring.nested.ExtendedChild"/>
+    </bean>
+
+    <bean name="late-import" factory-bean="root" factory-method="lookup" depends-on="export-declaration">
+        <constructor-arg> <idref local="just-bean"/> </constructor-arg>
+        <constructor-arg value="com.griddynamics.spring.nested.ExtendedChild"/>
+    </bean>
+
 </beans>

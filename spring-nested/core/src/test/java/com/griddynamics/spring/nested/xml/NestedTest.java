@@ -31,7 +31,7 @@ public class NestedTest {
 
     @BeforeClass
     public static void before() {
-        ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/spring/nested/analyzer/root-context.xml");
+        ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/spring/nested/xml/root-context.xml");
         registry = (Registry) context.getBean("root");
     }
 
