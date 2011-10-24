@@ -11,8 +11,7 @@ import org.springframework.beans.factory.xml.ResourceEntityResolver;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 
 import java.text.MessageFormat;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
@@ -34,6 +33,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
     private static final Logger log = LoggerFactory.getLogger(StrictContextParentBean.class);
 
     private String name;
+    private String[] fireOnly = null;
 
     public String getName() {
         return name;
@@ -41,6 +41,10 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
 
     public void setBeanName(String name) {
         this.name = name;
+    }
+
+    public void setFireOnly(String[] fireOnly) {
+        this.fireOnly = fireOnly;
     }
 
     @Override
@@ -53,6 +57,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
         ContextAnalyzer analyzer = new ContextAnalyzer();
         List<Exception> exceptions = new LinkedList<Exception>();
 
+        List<String> limitedLocations = new ArrayList<String>();
         for (String loc : getConfigLocations()) {
             BeanDefinitionRegistry beanFactory = getBeanFactory(loc);
 
@@ -62,10 +67,16 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
                 try {
                     if (isExport(beanDefinition)) {
                         analyzer.addExport(beanDefinition, loc);
+                        if (fireOnly != null && checkForFireOnly(beanName)) {
+                            limitedLocations.add(loc);
+                        }
                     } else if (isImport(beanDefinition)) {
                         analyzer.addImport(beanDefinition, loc);
                     } else if (beanDefinition.getBeanClassName() != null) {
                         checkClass(loc, beanName, beanDefinition.getBeanClassName());
+                        if (fireOnly != null && checkForFireOnly(beanName)) {
+                            limitedLocations.add(loc);
+                        }
                     }
                 } catch (Exception ex) {
                     exceptions.add(ex);
@@ -88,6 +99,11 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
 
         DependencySorter sorter = new DependencySorter(getConfigLocations(), analyzer.getImports(), analyzer.getExports());
         setConfigLocations(sorter.sort());
+
+        limitConfigLocations(limitedLocations, analyzer.getImports(), analyzer.getExports());
+        if (log.isDebugEnabled()) {
+            log.debug("Contexts were created in that order: " + Arrays.toString(getConfigLocations()));
+        }
     }
 
     private void checkClass(String location, String beanName, String beanClassName) throws ClassNotFoundException {
@@ -137,5 +153,49 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
             }
         }
         return false;
+    }
+
+    private boolean checkForFireOnly(String beanName) {
+        return Arrays.asList(fireOnly).contains(beanName);
+    }
+
+    private void limitConfigLocations(List<String> limitedLocations, Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
+        Map<String, HashSet<String>> dependencyGraph = new HashMap<String, HashSet<String>>();
+        for (String beanName : imports.keySet()) {
+            String expLoc = exports.get(beanName).getLocation();
+            for (BeanReferenceInfo refInfo : imports.get(beanName)) {
+                if (!dependencyGraph.containsKey(refInfo.getLocation())) {
+                    dependencyGraph.put(refInfo.getLocation(), new HashSet<String>());
+                }
+                dependencyGraph.get(refInfo.getLocation()).add(expLoc);
+            }
+        }
+
+        Set<String> marked = new HashSet<String>();
+        if (!limitedLocations.isEmpty()) {
+            for (String loc : limitedLocations) {
+                markDependencies(dependencyGraph, loc, marked);
+            }
+
+            limitedLocations.clear();
+            for (String location : getConfigLocations()) {
+                if (marked.contains(location)) {
+                    limitedLocations.add(location);
+                }
+            }
+            setConfigLocations(limitedLocations.toArray(new String[0]));
+        }
+    }
+
+    private void markDependencies(Map<String, HashSet<String>> dependencyGraph, String loc, Set<String> marked) {
+        marked.add(loc);
+        if (dependencyGraph.containsKey(loc)) {
+            for (String dependsOn : dependencyGraph.get(loc)) {
+                if (!marked.contains(dependsOn)) {
+                    marked.add(dependsOn);
+                    markDependencies(dependencyGraph, dependsOn, marked);
+                }
+            }
+        }
     }
 }

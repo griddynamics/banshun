@@ -52,7 +52,6 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     private boolean strictErrorHandling = false;
     private String childContextPrototype = null;
 
-    private String[] fireOnly = null;
     public static final String TARGET_SOURCE_SUFFIX = "_targetSource";
     public static final String BEAN_DEF_SUFFIX = "_beanDef";
 
@@ -68,10 +67,6 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
 
     public void setChildContextPrototype(String childContextPrototype) {
         this.childContextPrototype = childContextPrototype;
-    }
-
-    public void setFireOnly(String[] fireOnly) {
-        this.fireOnly = fireOnly;
     }
 
     /**
