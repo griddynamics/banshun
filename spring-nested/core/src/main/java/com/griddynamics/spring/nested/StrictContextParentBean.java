@@ -101,9 +101,8 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
         setConfigLocations(sorter.sort());
 
         limitConfigLocations(limitedLocations, analyzer.getImports(), analyzer.getExports());
-        if (log.isDebugEnabled()) {
-            log.debug("Contexts were created in that order: " + Arrays.toString(getConfigLocations()));
-        }
+
+        log.info("Contexts were created in that order: " + Arrays.toString(getConfigLocations()));
     }
 
     private void checkClass(String location, String beanName, String beanClassName) throws ClassNotFoundException {
