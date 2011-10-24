@@ -29,10 +29,4 @@ public interface Registry {
 	 * @return proxy for the requested service
 	 * */
 	<T> T lookup(final String name, final Class<T> clazz);
-	/**
-	 * allows to enumerate services for an interface
-	 * @param clazz requested interface
-	 * @return collection of services' keys which declares a requested interface
-	 * @deprecated it was used for handler mapper v1 shouldn't be used now */
-	<T> Collection<String> lookupByInterface(Class<T> clazz);
 }

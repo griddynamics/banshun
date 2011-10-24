@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
   Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights Reserved
   http://www.griddynamics.com
 
@@ -8,15 +8,18 @@
 
   $Id: $
   @Project:     Spring Nested
-  @Description: 
+  @Description:
  -->
-<beans xmlns="http://www.springframework.org/schema/beans"
+<beans:beans xmlns="http://www.griddynamics.com/schema/nested"
+       xmlns:beans="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:nested="http://www.griddynamics.com/schema/nested"
        xsi:schemaLocation="
-         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
          http://www.griddynamics.com/schema/nested http://www.griddynamics.com/schema/nested/nested-schema.xsd
+         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        ">
 
-    <bean name="secondChild" class="com.griddynamics.spring.nested.xml.ChildImpl" />
-</beans>
+    <beans:import resource="child-context.xml" />
+
+    <export ref="customer" interface="com.griddynamics.spring.nested.autoproxy.CustomerService" />
+
+</beans:beans>

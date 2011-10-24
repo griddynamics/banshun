@@ -1,19 +1,18 @@
 package com.griddynamics.spring.nested;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import org.springframework.aop.TargetSource;
+import org.springframework.aop.target.LazyInitTargetSource;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.beans.factory.*;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.*;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -25,12 +24,12 @@ import org.slf4j.Logger;
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
  * Reserved http://www.griddynamics.com
- * 
+ * <p/>
  * For information about the licensing and copyright of this document please
  * contact Grid Dynamics at info@griddynamics.com.
- * 
+ * <p/>
  * $Id: $
- * 
+ *
  * @Project: Spring Nested
  * @Description: singleton bean, should be used accordingly with the interface {@link Registry} recommendations.
  * Implementation of the {@link Registry} delegated to simple internal bean {@link RegistryBean}
@@ -40,7 +39,8 @@ import org.slf4j.Logger;
  * Note: children contexts extends {@link XmlWebApplicationContext}. so it's a little bit straightforward and
  * intended for the current usage
  */
-public class ContextParentBean implements InitializingBean, ApplicationContextAware, Registry, DisposableBean {
+public class ContextParentBean implements InitializingBean, ApplicationContextAware, Registry, DisposableBean
+        , ApplicationListener {
     private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
     private Map<String, Exception> nestedContextsExceptions = new LinkedHashMap<String, Exception>();
 
@@ -48,12 +48,13 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     private List<ConfigurableApplicationContext> children = new ArrayList<ConfigurableApplicationContext>();
 
     private String[] configLocations;
-    private Registry registry;
 
     private boolean strictErrorHandling = false;
-    private String childApplicationContextClassName = null;
+    private String childContextPrototype = null;
 
     private String[] fireOnly = null;
+    public static final String TARGET_SOURCE_SUFFIX = "_targetSource";
+    public static final String BEAN_DEF_SUFFIX = "_beanDef";
 
     /**
      * specifies whether initialization of this bean failed if one of the nested children contexts
@@ -65,16 +66,8 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         this.strictErrorHandling = strictErrorHandling;
     }
 
-    public Registry getRegistry() {
-        return registry;
-    }
-
-    public void setChildApplicationContextClassName(String childApplicationContextClassName) {
-        this.childApplicationContextClassName = childApplicationContextClassName;
-    }
-
-    public void setRegistry(Registry registry) {
-        this.registry = registry;
+    public void setChildContextPrototype(String childContextPrototype) {
+        this.childContextPrototype = childContextPrototype;
     }
 
     public void setFireOnly(String[] fireOnly) {
@@ -111,12 +104,31 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         }
     }
 
+    public void onApplicationEvent(ApplicationEvent event) {
+        if (event instanceof ContextRefreshedEvent) {
+            if (context.equals(((ContextRefreshedEvent) event).getApplicationContext())) {
+                ConfigurableBeanFactory factory = ((AbstractApplicationContext) context).getBeanFactory();
+                String[] singletonNames = factory.getSingletonNames();
+                for (String singletonName : singletonNames) {
+                    if (singletonName.contains(TARGET_SOURCE_SUFFIX)) {
+                        String name = singletonName.split(ContextParentBean.TARGET_SOURCE_SUFFIX)[0]
+                                + ContextParentBean.BEAN_DEF_SUFFIX;
+                        if (!context.containsBean(name)) {
+                            ((BeanDefinitionRegistry) factory).registerBeanDefinition(name,
+                                    BeanDefinitionBuilder.genericBeanDefinition(factory.getBean(singletonName, TargetSource.class).getTargetClass()).getBeanDefinition());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private ConfigurableApplicationContext createChildContext(Resource res, ApplicationContext parent) throws Exception {
-        if (childApplicationContextClassName != null && childApplicationContextClassName.length() > 0) {
+        if (childContextPrototype != null && childContextPrototype.length() > 0) {
             try {
-                return (ConfigurableApplicationContext) parent.getBean(childApplicationContextClassName, res, parent);
+                return (ConfigurableApplicationContext) parent.getBean(childContextPrototype, res, parent);
             } catch (Exception e) {
-                log.warn("Can not initialize ApplicationContext " + childApplicationContextClassName + " with configuration location " + res.getURL(), e);
+                log.warn("Can not initialize ApplicationContext " + childContextPrototype + " with configuration location " + res.getURL(), e);
             }
         }
 
@@ -167,18 +179,54 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         if (log.isDebugEnabled()) {
             log.debug("exporting bean '" + ref.getTarget() + "' with interface '" + ref.getInterfaceClass().getSimpleName() + "'");
         }
-        return registry.export(ref);
+
+        String singletonBeanName = ref.getTarget() + TARGET_SOURCE_SUFFIX;
+
+        if (!context.containsBean(singletonBeanName)) {
+            ExportLazyInitTargetSource exportLazyInitTargetSource = new ExportLazyInitTargetSource();
+            exportLazyInitTargetSource.setTargetBeanName(ref.getTarget());
+            exportLazyInitTargetSource.setBeanFactory(ref.getBeanFactory());
+            exportLazyInitTargetSource.setTargetClass(ref.getInterfaceClass());
+            exportLazyInitTargetSource.setExportClass(ref.getInterfaceClass());
+
+            ((AbstractApplicationContext) context).getBeanFactory()
+                    .registerSingleton(singletonBeanName, exportLazyInitTargetSource);
+        } else {
+            ExportLazyInitTargetSource exportLazyInitTargetSource = (ExportLazyInitTargetSource) context.getBean(singletonBeanName, TargetSource.class);
+            exportLazyInitTargetSource.setBeanFactory(ref.getBeanFactory());
+            exportLazyInitTargetSource.setExportClass(ref.getInterfaceClass());
+        }
+
+        return null;
+//        return registry.export(ref);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T lookup(String name, Class<T> clazz) {
         if (log.isDebugEnabled()) {
             log.debug("looking up bean '" + name + "' with interface '" + clazz.getSimpleName() + "'");
         }
-        return registry.lookup(name, clazz);
-    }
 
-    public <T> Collection<String> lookupByInterface(Class<T> clazz) {
-        return registry.lookupByInterface(clazz);
+        String beanDefinitionName = name + BEAN_DEF_SUFFIX;
+        String singletonBeanName = name + TARGET_SOURCE_SUFFIX;
+
+        if (context.containsBean(beanDefinitionName)) {
+            return context.getBean(beanDefinitionName, clazz);
+        } else {
+            ExportLazyInitTargetSource exportLazyInitTargetSource = new ExportLazyInitTargetSource();
+            exportLazyInitTargetSource.setTargetBeanName(name);
+            exportLazyInitTargetSource.setTargetClass(clazz);
+
+            ((AbstractApplicationContext) context).getBeanFactory()
+                    .registerSingleton(singletonBeanName, exportLazyInitTargetSource);
+
+            ConfigurableBeanFactory factory = ((AbstractApplicationContext) context).getBeanFactory();
+            ((BeanDefinitionRegistry) factory).registerBeanDefinition(beanDefinitionName,
+                    BeanDefinitionBuilder.genericBeanDefinition(clazz).getBeanDefinition());
+
+            return context.getBean(beanDefinitionName, clazz);
+        }
+//        return registry.lookup(name, clazz);
     }
 
     public void destroy() throws Exception {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
   Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights Reserved
   http://www.griddynamics.com
 
@@ -8,7 +8,7 @@
 
   $Id: $
   @Project:     Spring Nested
-  @Description: 
+  @Description:
  -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -16,11 +16,8 @@
 
     <bean id="childContextPrototype" class="com.griddynamics.spring.nested.SingleResourceXmlChildContext" scope="prototype"/>
 
-    <bean name="root" class="com.griddynamics.spring.nested.StrictContextParentBean">
-        <property name="configLocation" value="
-                /com/griddynamics/spring/nested/analyzer/export-context.xml
-                /com/griddynamics/spring/nested/analyzer/import-context.xml
-        " />
+    <bean name="root" class="com.griddynamics.spring.nested.ContextParentBean">
+        <property name="configLocation" value="/com/griddynamics/spring/nested/autoproxy/child-export-context.xml" />
         <property name="strictErrorHandling" value="true" />
         <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>
@@ -29,5 +26,26 @@
         <property name="customTargetSourceCreators" >
             <bean class="com.griddynamics.spring.nested.NestedTargetSourceCreator"/>
         </property>
+
+        <property name="beanNames">
+            <list>
+                <value>customer*</value>
+            </list>
+        </property>
+
+        <property name="interceptorNames">
+            <list>
+                <value>advisor</value>
+            </list>
+        </property>
     </bean>
+
+    <bean id="advisor"
+          class="org.springframework.aop.support.NameMatchMethodPointcutAdvisor">
+        <property name="mappedName" value="getName"/>
+        <property name="advice" ref="advice"/>
+    </bean>
+
+    <bean id="advice" class="com.griddynamics.spring.nested.autoproxy.AroundMethod"/>
+
 </beans>

@@ -5,7 +5,8 @@ import java.lang.reflect.Proxy;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.aop.TargetSource;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -14,117 +15,116 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
  * Reserved http://www.griddynamics.com
- * 
+ * <p/>
  * For information about the licensing and copyright of this document please
  * contact Grid Dynamics at info@griddynamics.com.
- * 
+ * <p/>
  * $Id: $
- * 
+ *
  * @Project: Spring Nested
- * @Description: 
- * 
+ * @Description:
  */
 public class RegistryBeanTest extends TestCase {
+    public void testExact() {
+        check("com/griddynamics/spring/nested/exact-match-import.xml");
+    }
 
-	protected void setUp() throws Exception {
-	}
-	public void testExact()	{
-}
-	public void tOstExact()	{
-		check("com/griddynamics/spring/nested/exact-match-import.xml");
-	}
+    public void testWider() {
+        check("com/griddynamics/spring/nested/coarse-import.xml");
+    }
 
-	public void tOstWider()	{
-		check("com/griddynamics/spring/nested/coarse-import.xml");
-	}
+    public void testTooConcreteImport() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("com/griddynamics/spring/nested/illegal-concrete-import.xml");
 
-	public void tOstTooConcreteImport()
+        Assert.assertTrue("have no exports due to laziness", hasNoExports(ctx));
+        Object proxy = ctx.getBean("early-import");
 
-	{
-		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("com/macys/platform/util/spring/nested/illegal-concrete-import.xml");
-		Registry registry = (Registry)ctx.getBean("root", Registry.class);
-		// checking laziness 
-		Assert.assertTrue("have no exports due to laziness", hasNoExports(ctx));
-		Object proxy = ctx.getBean("early-import");
-		// force export
-		ctx.getBean("export-declaration");
-		// we have export here
-		Assert.assertTrue("we have only parent interface export declaration",
-                registry.lookupByInterface(ExtendedChild.class).isEmpty() &&
-                        registry.lookupByInterface(NarrowDaddy.class).contains("just-bean"));
-		
-		try{// target is ready here, but types does not match
-			proxy.toString();
-		}catch(BeanNotOfRequiredTypeException e){
-			Assert.assertEquals("just-bean", e.getBeanName());
-			
-			try{
-				ctx.getBean("late-import").toString();
-			}catch(BeanCreationException ee){
-				Assert.assertEquals("late-import", ee.getBeanName());
-				return;
-			}
-			Assert.fail("we should have BeanCreactionException here");
-			
-			return;
-		}
-		Assert.fail("we should have BeanNotOfRequiredTypeException here");
-	}
-	
-	public void tOstWrongExport(){
-		ApplicationContext ctx = new ClassPathXmlApplicationContext("com/griddynamics/spring/nested/wrong-export-class.xml");
-		
-		Object bean ;
-		try{
-				bean = ctx.getBean("late-import");
-		}catch(Exception e){
-			try{
-				bean = ctx.getBean("early-import");
-			}catch(Exception ee){
-				return;
-			}
-			Assert.fail("we should have an Exception here.");
-		}
-		Assert.fail("we should have an Exception here");
-		return;
-	}
-	
-	protected void check(String configLocation) {
-		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(configLocation);
-		
-		// checking laziness 
-		Assert.assertTrue("have no exports due to laziness", hasNoExports(ctx));
-		
-		Object proxy = ctx.getBean("early-import");
-		try{
-			proxy.toString();
-			Assert.fail("attempt to invoke proxy without export should lead to exception");
-		}catch(NoSuchBeanDefinitionException e)
-		{	Assert.assertEquals("invoke bean without proper export", "just-bean", e.getBeanName());
-		}
-		// force export
-		ctx.getBean("export-declaration");
-		Assert.assertSame(proxy, ctx.getBean("early-import"));
-		Assert.assertTrue("have export ref", hasExport(ctx, "just-bean"));
-		
-		Assert.assertEquals("proxies should refer the same bean instance", proxy.toString(),
-                ctx.getBean("late-import").toString());
-		Assert.assertNotSame("proxy and bean can't be identical", proxy,
-                ctx.getBean("late-import"));
-		Assert.assertSame("late import resolved to a bean instance itself", ctx.getBean("late-import"),
-                ctx.getBean("just-bean"));
-		Assert.assertTrue("early import gives us a proxy", proxy instanceof Proxy);
-		Assert.assertFalse("late import Does NoT give us a proxy", ctx.getBean("late-import") instanceof Proxy);
-	}
+        // force export
+        ctx.getBean("export-declaration");
 
-	private boolean hasExport(ClassPathXmlApplicationContext ctx, String bean) {
-		Registry registry = (Registry)ctx.getBean("root", Registry.class);
-		return registry.lookupByInterface(ExtendedChild.class).contains(bean)&&registry.lookupByInterface(NarrowDaddy.class).contains(bean);
-	}
+        try {
+            // target is ready here, but types does not match
+            proxy.toString();
+        } catch (BeanNotOfRequiredTypeException e) {
+            Assert.assertEquals("just-bean", e.getBeanName());
 
-	private boolean hasNoExports(ApplicationContext ctx) {
-		Registry registry = (Registry)ctx.getBean("root", Registry.class);
-		return registry.lookupByInterface(ExtendedChild.class).isEmpty() && 
-				registry.lookupByInterface(NarrowDaddy.class).isEmpty();
-	}
+            try {
+                Object b = ctx.getBean("late-import");
+                b.toString();
+            } catch (BeansException ee) {
+                Assert.assertEquals("just-bean", ((BeanNotOfRequiredTypeException) ee).getBeanName());
+                return;
+            }
+
+            Assert.fail("we should have BeanCreactionException here");
+            return;
+        }
+        Assert.fail("we should have BeanNotOfRequiredTypeException here");
+    }
+
+    public void testWrongExport() {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("com/griddynamics/spring/nested/wrong-export-class.xml");
+
+        Object bean;
+        try {
+            bean = ctx.getBean("late-import");
+            bean.toString();
+        } catch (Exception e) {
+            try {
+                bean = ctx.getBean("early-import");
+                bean.toString();
+            } catch (Exception ee) {
+                return;
+            }
+            Assert.fail("we should have an Exception here.");
+        }
+        Assert.fail("we should have an Exception here");
+    }
+
+    protected void check(String configLocation) {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(configLocation);
+
+        Assert.assertTrue("have no exports due to laziness", hasNoExports(ctx));
+
+        Object proxy = ctx.getBean("early-import");
+        try {
+            proxy.toString();
+            Assert.fail("attempt to invoke proxy without export should lead to exception");
+        } catch (NoSuchBeanDefinitionException e) {
+            Assert.assertEquals("invoke bean without proper export", "just-bean", e.getBeanName());
+        }
+
+        // force export
+        ctx.getBean("export-declaration");
+
+        Assert.assertSame(proxy, ctx.getBean("early-import"));
+        Assert.assertFalse("have export ref", hasExport(ctx, "just-bean"));
+
+        Assert.assertEquals("proxies should refer the same bean instance", proxy.toString(), ctx.getBean("late-import").toString());
+        Assert.assertSame("proxies should refer the same bean instance", proxy, ctx.getBean("late-import"));
+        Assert.assertTrue("early import gives us a proxy", proxy instanceof Proxy);
+        Assert.assertTrue("late import gives us a proxy", ctx.getBean("late-import") instanceof Proxy);
+    }
+
+    private boolean hasExport(ClassPathXmlApplicationContext ctx, String bean) {
+        String beanName = bean + ContextParentBean.TARGET_SOURCE_SUFFIX;
+        if (ctx.containsBean(beanName)) {
+            ExportLazyInitTargetSource elits = (ExportLazyInitTargetSource) ctx.getBean(beanName, TargetSource.class);
+            return elits.getBeanFactory() == null;
+        }
+        return false;
+    }
+
+    private boolean hasNoExports(ApplicationContext ctx) {
+        String[] beanNames = ctx.getBeanNamesForType(TargetSource.class);
+        for (String beanName : beanNames) {
+            if (beanName.contains(ContextParentBean.TARGET_SOURCE_SUFFIX)) {
+                ExportLazyInitTargetSource elits = (ExportLazyInitTargetSource) ctx.getBean(beanName, TargetSource.class);
+                if (elits.getBeanFactory() != null) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }
