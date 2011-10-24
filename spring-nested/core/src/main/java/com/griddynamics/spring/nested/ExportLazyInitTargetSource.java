@@ -28,15 +28,15 @@ public class ExportLazyInitTargetSource extends AbstractBeanFactoryBasedTargetSo
     }
 
     @Override
-    public synchronized Object getTarget() throws BeansException {
-        preProcess();
+    public Object getTarget() throws BeansException {
+        checkForCorrectAssignment();
         if (target == null) {
             this.target = getBeanFactory().getBean(getTargetBeanName());
         }
         return this.target;
     }
 
-    private void preProcess() {
+    private void checkForCorrectAssignment() {
         if (exportClass == null) {
             throw new NoSuchBeanDefinitionException(getTargetBeanName(), "can't find export declaration for lookup("
                     + getTargetBeanName() + "," + getTargetClass() + ")");

@@ -21,9 +21,6 @@
                 /com/griddynamics/spring/nested/analyzer/export-context.xml
                 /com/griddynamics/spring/nested/analyzer/import-context.xml
         " />
-        <property name="registry">
-            <bean class="com.griddynamics.spring.nested.RegistryBean" />
-        </property>
         <property name="strictErrorHandling" value="true" />
         <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>

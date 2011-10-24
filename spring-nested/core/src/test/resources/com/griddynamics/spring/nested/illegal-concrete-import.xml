@@ -18,9 +18,6 @@
     <bean id="childContextPrototype" class="com.griddynamics.spring.nested.SingleResourceXmlChildContext" scope="prototype"/>
     <bean name="root" class="com.griddynamics.spring.nested.StrictContextParentBean">
         <property name="configLocation" value=""/>
-        <property name="registry">
-            <bean class="com.griddynamics.spring.nested.RegistryBean" />
-        </property>
         <property name="strictErrorHandling" value="true" />
         <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>

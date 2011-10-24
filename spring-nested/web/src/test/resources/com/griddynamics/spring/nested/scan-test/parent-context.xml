@@ -24,9 +24,6 @@
     <bean name="root" class="com.griddynamics.spring.nested.ContextParentBean">
         <property name="configLocation" value="classpath:/com/griddynamics/spring/nested/scan-test/child1-context.xml
         classpath:/com/griddynamics/spring/nested/scan-test/child2-context.xml" />
-        <property name="registry">
-            <bean class="com.griddynamics.spring.nested.RegistryBean" />
-        </property>
         <property name="strictErrorHandling" value="true" />
         <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>

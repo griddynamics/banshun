@@ -18,9 +18,6 @@
 
     <bean name="root" class="com.griddynamics.spring.nested.ContextParentBean">
         <property name="configLocation" value="/com/griddynamics/spring/nested/autoproxy/child-export-context.xml" />
-        <property name="registry">
-            <bean class="com.griddynamics.spring.nested.RegistryBean" />
-        </property>
         <property name="strictErrorHandling" value="true" />
         <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>

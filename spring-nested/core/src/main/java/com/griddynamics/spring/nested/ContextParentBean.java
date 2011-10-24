@@ -48,7 +48,6 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     private List<ConfigurableApplicationContext> children = new ArrayList<ConfigurableApplicationContext>();
 
     private String[] configLocations;
-    private Registry registry;
 
     private boolean strictErrorHandling = false;
     private String childContextPrototype = null;
@@ -67,16 +66,8 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         this.strictErrorHandling = strictErrorHandling;
     }
 
-    public Registry getRegistry() {
-        return registry;
-    }
-
     public void setChildContextPrototype(String childContextPrototype) {
         this.childContextPrototype = childContextPrototype;
-    }
-
-    public void setRegistry(Registry registry) {
-        this.registry = registry;
     }
 
     public void setFireOnly(String[] fireOnly) {
@@ -236,10 +227,6 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
             return context.getBean(beanDefinitionName, clazz);
         }
 //        return registry.lookup(name, clazz);
-    }
-
-    public <T> Collection<String> lookupByInterface(Class<T> clazz) {
-        return registry.lookupByInterface(clazz);
     }
 
     public void destroy() throws Exception {
