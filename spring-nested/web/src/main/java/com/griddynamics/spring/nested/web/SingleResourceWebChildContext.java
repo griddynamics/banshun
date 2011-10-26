@@ -21,9 +21,7 @@ import java.io.IOException;
  * @Description:
  *
  */
-public final class SingleResourceWebChildContext extends
-        XmlWebApplicationContext {
-
+public final class SingleResourceWebChildContext extends XmlWebApplicationContext {
     private Resource res;
 
     SingleResourceWebChildContext(Resource res, ApplicationContext parent) {

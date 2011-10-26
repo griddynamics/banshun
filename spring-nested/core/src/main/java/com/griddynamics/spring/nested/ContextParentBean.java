@@ -1,12 +1,11 @@
 package com.griddynamics.spring.nested;
 
-import java.io.IOException;
-import java.util.*;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.TargetSource;
-import org.springframework.aop.target.LazyInitTargetSource;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.*;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -14,12 +13,14 @@ import org.springframework.context.*;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.util.SystemPropertyUtils;
 import org.springframework.web.context.support.XmlWebApplicationContext;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
@@ -140,19 +141,41 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     }
 
     /**
-     * delimiter separated list of Sspring-usual resources specifies. classpath*: classpath:, file:
+     * delimiter separated list of Spring-usual resources specifies. classpath*: classpath:, file:
      * start wildcards are supported.
      * delimiters are {@link ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS}
      */
-    public void setConfigLocation(String list) {
+    public void setConfigLocation(String list) throws Exception {
         String[] locations = StringUtils.tokenizeToStringArray(list,
                 ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
 
         Assert.noNullElements(locations, "Config locations must not be null");
-        configLocations = new String[locations.length];
+
+        List<String> configLocs = new ArrayList<String>();
+        PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
+
         for (int i = 0; i < locations.length; i++) {
-            this.configLocations[i] = (SystemPropertyUtils
-                    .resolvePlaceholders(locations[i])).trim();
+            String location = (SystemPropertyUtils.resolvePlaceholders(locations[i])).trim();
+            boolean isPattern = pmrpr.getPathMatcher().isPattern(location);
+
+            Resource[] resources = pmrpr.getResources(location);
+            for (Resource resource : resources) {
+                String locName = resource.getURI().toString();
+                if (!configLocs.contains(locName) && isPattern) {
+                    configLocs.add(locName);
+                }
+                if (!isPattern) {
+                    configLocs.remove(locName);
+                    configLocs.add(locName);
+                }
+            }
+        }
+
+        configLocations = configLocs.toArray(new String[0]);
+
+        log.info("Locations were resolved to that sequence:");
+        for (String loc : configLocs) {
+            log.info(loc);
         }
     }
 

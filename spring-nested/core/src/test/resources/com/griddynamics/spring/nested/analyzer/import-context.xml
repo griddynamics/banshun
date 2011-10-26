@@ -21,14 +21,14 @@
     <!-- Old fashion way using boilerplate xml wasn't changed here
         due to check it's working every time by running unit-tests -->
     <bean name="firstObject" factory-bean="root" factory-method="lookup" lazy-init="true">
-		<constructor-arg value="firstObject"/>
-		<constructor-arg value="com.griddynamics.spring.nested.analyzer.SubInterface"/>
-	</bean>
+        <constructor-arg value="firstObject"/>
+        <constructor-arg value="com.griddynamics.spring.nested.analyzer.SubInterface"/>
+    </bean>
 
-	<bean name="secondObject" factory-bean="root" factory-method="lookup" lazy-init="true">
-		<constructor-arg value="secondObject"/>
-		<constructor-arg value="com.griddynamics.spring.nested.analyzer.SubInterface"/>
-	</bean>
+    <bean name="secondObject" factory-bean="root" factory-method="lookup" lazy-init="true">
+        <constructor-arg value="secondObject"/>
+        <constructor-arg value="com.griddynamics.spring.nested.analyzer.SubInterface"/>
+    </bean>
 
     <nested:import id="thirdObject" interface="com.griddynamics.spring.nested.analyzer.SubInterface"/>
 

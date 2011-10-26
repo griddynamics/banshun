@@ -17,7 +17,8 @@ public class DynamicProfilesTest {
         registry.setFireOnly(new String[] {"object1"});
         registry.afterPropertiesSet();
 
-        assertEquals(new String[]{"/com/griddynamics/spring/nested/dynamic/profiles/ctx1.xml"}, registry.getConfigLocations());
+        assertEquals(1, registry.getConfigLocations().length);
+        assertTrue(registry.getConfigLocations()[0].contains("ctx1.xml"));
     }
 
     @Test
@@ -27,12 +28,11 @@ public class DynamicProfilesTest {
         registry.setFireOnly(new String[] {"context3", "context7"});
         registry.afterPropertiesSet();
 
-        assertEquals(new String[]{
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx1.xml",
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx2.xml",
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx7.xml",
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx3.xml"
-        }, registry.getConfigLocations());
+        assertEquals(4, registry.getConfigLocations().length);
+        assertTrue(registry.getConfigLocations()[0].contains("ctx1.xml"));
+        assertTrue(registry.getConfigLocations()[1].contains("ctx2.xml"));
+        assertTrue(registry.getConfigLocations()[2].contains("ctx7.xml"));
+        assertTrue(registry.getConfigLocations()[3].contains("ctx3.xml"));
     }
 
     @Test
@@ -41,12 +41,12 @@ public class DynamicProfilesTest {
         StrictContextParentBean registry = (StrictContextParentBean) context.getBean("root");
         registry.setFireOnly(new String[]{"context6"});
         registry.afterPropertiesSet();
-        assertEquals(new String[]{
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx1.xml",
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx2.xml",
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx7.xml",
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx6.xml"
-        }, registry.getConfigLocations());
+
+        assertEquals(4, registry.getConfigLocations().length);
+        assertTrue(registry.getConfigLocations()[0].contains("ctx1.xml"));
+        assertTrue(registry.getConfigLocations()[1].contains("ctx2.xml"));
+        assertTrue(registry.getConfigLocations()[2].contains("ctx7.xml"));
+        assertTrue(registry.getConfigLocations()[3].contains("ctx6.xml"));
     }
 
     @Test
@@ -56,14 +56,13 @@ public class DynamicProfilesTest {
         registry.setFireOnly(new String[] {"context5"});
         registry.afterPropertiesSet();
 
-        assertEquals(new String[]{
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx1.xml",
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx2.xml",
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx7.xml",
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx3.xml",
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx4.xml",
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx6.xml",
-                "/com/griddynamics/spring/nested/dynamic/profiles/ctx5.xml"
-        }, registry.getConfigLocations());
+        assertEquals(7, registry.getConfigLocations().length);
+        assertTrue(registry.getConfigLocations()[0].contains("ctx1.xml"));
+        assertTrue(registry.getConfigLocations()[1].contains("ctx2.xml"));
+        assertTrue(registry.getConfigLocations()[2].contains("ctx7.xml"));
+        assertTrue(registry.getConfigLocations()[3].contains("ctx3.xml"));
+        assertTrue(registry.getConfigLocations()[4].contains("ctx4.xml"));
+        assertTrue(registry.getConfigLocations()[5].contains("ctx6.xml"));
+        assertTrue(registry.getConfigLocations()[6].contains("ctx5.xml"));
     }
 }
