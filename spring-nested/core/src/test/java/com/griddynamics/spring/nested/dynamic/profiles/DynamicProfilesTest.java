@@ -14,7 +14,7 @@ public class DynamicProfilesTest {
     public void dynamicProfileTest0() throws Exception {
         ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/spring/nested/dynamic/profiles/root-ctx.xml");
         StrictContextParentBean registry = (StrictContextParentBean) context.getBean("root");
-        registry.setFireOnly(new String[] {"object1"});
+        registry.setRunOnlyServices(new String[] {"object1"});
         registry.afterPropertiesSet();
 
         assertEquals(1, registry.getConfigLocations().length);
@@ -25,7 +25,7 @@ public class DynamicProfilesTest {
     public void dynamicProfileTest1() throws Exception {
         ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/spring/nested/dynamic/profiles/root-ctx.xml");
         StrictContextParentBean registry = (StrictContextParentBean) context.getBean("root");
-        registry.setFireOnly(new String[] {"context3", "context7"});
+        registry.setRunOnlyServices(new String[] {"context3", "context7"});
         registry.afterPropertiesSet();
 
         assertEquals(4, registry.getConfigLocations().length);
@@ -39,7 +39,7 @@ public class DynamicProfilesTest {
     public void dynamicProfileTest2() throws Exception {
         ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/spring/nested/dynamic/profiles/root-ctx.xml");
         StrictContextParentBean registry = (StrictContextParentBean) context.getBean("root");
-        registry.setFireOnly(new String[]{"context6"});
+        registry.setRunOnlyServices(new String[]{"context6"});
         registry.afterPropertiesSet();
 
         assertEquals(4, registry.getConfigLocations().length);
@@ -53,7 +53,7 @@ public class DynamicProfilesTest {
     public void dynamicProfileTest3() throws Exception {
         ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/spring/nested/dynamic/profiles/root-ctx.xml");
         StrictContextParentBean registry = (StrictContextParentBean) context.getBean("root");
-        registry.setFireOnly(new String[] {"context5"});
+        registry.setRunOnlyServices(new String[] {"context5"});
         registry.afterPropertiesSet();
 
         assertEquals(7, registry.getConfigLocations().length);

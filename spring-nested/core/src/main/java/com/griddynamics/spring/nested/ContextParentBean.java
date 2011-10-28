@@ -33,7 +33,6 @@ import java.util.*;
  *
  * @Project: Spring Nested
  * @Description: singleton bean, should be used accordingly with the interface {@link Registry} recommendations.
- * Implementation of the {@link Registry} delegated to simple internal bean {@link RegistryBean}
  * Also, it instantiate the nested children contexts by the given resources. These contexts
  * receives factory bean instantiates this bean as a "parent bean". This bean will be available via
  * this Spring intrinsic feature, by the some well known name.
@@ -48,13 +47,14 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     protected ApplicationContext context;
     private List<ConfigurableApplicationContext> children = new ArrayList<ConfigurableApplicationContext>();
 
-    private String[] configLocations;
+    protected String[] configLocations;
 
     private boolean strictErrorHandling = false;
     private String childContextPrototype = null;
 
     public static final String TARGET_SOURCE_SUFFIX = "_targetSource";
     public static final String BEAN_DEF_SUFFIX = "_beanDef";
+    public static final String EXPORT_REF_SUFFIX = "-export-ref";
 
     /**
      * specifies whether initialization of this bean failed if one of the nested children contexts
@@ -145,10 +145,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
      * start wildcards are supported.
      * delimiters are {@link ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS}
      */
-    public void setConfigLocation(String list) throws Exception {
-        String[] locations = StringUtils.tokenizeToStringArray(list,
-                ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
-
+    public void setConfigLocations(String[] locations) throws Exception {
         Assert.noNullElements(locations, "Config locations must not be null");
 
         List<String> configLocs = new ArrayList<String>();
@@ -173,17 +170,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
 
         configLocations = configLocs.toArray(new String[0]);
 
-        log.info("Locations were resolved to that sequence:");
-        for (String loc : configLocs) {
-            log.info(loc);
-        }
-    }
-
-    /**
-     * accepts delimited list from {@link setConfigLocation}
-     */
-    public void setConfigLocations(String[] list) {
-        configLocations = list;
+        log.info("Locations were resolved to that sequence: " + configLocs.toString());
     }
 
     /**

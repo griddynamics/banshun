@@ -24,4 +24,5 @@
     <nested:export ref="object7" interface="com.griddynamics.spring.nested.analyzer.SuperInterface"/>
 
     <bean name="context7" class="com.griddynamics.spring.nested.analyzer.TransportObject" lazy-init="true"/>
+    <nested:export ref="context7" interface="com.griddynamics.spring.nested.analyzer.SuperInterface"/>
 </beans>

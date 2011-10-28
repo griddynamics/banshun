@@ -20,8 +20,9 @@ public class WildcardsTest {
 
     @Test
     public void wildcardsTest0() throws Exception {
-        registry.setConfigLocation(
+        registry.setConfigLocations(new String[] {
                 "/com/griddynamics/spring/nested/wildcards/*7.xml"
+            }
         );
 
         assertEquals(1, registry.getConfigLocations().length);
@@ -30,12 +31,13 @@ public class WildcardsTest {
 
     @Test
     public void wildcardsTest1() throws Exception {
-        registry.setConfigLocation(
-                "/com/griddynamics/spring/nested/wildcards/sub1/ctx1.xml\n" +
-                "/com/griddynamics/spring/nested/wildcards/sub2/*.xml\n" +
-                "/com/griddynamics/spring/nested/wildcards/sub1/*.xml\n" +
-                "/com/griddynamics/spring/nested/wildcards/sub2/ctx6.xml\n" +
+        registry.setConfigLocations(new String[] {
+                "/com/griddynamics/spring/nested/wildcards/sub1/ctx1.xml",
+                "/com/griddynamics/spring/nested/wildcards/sub2/*.xml",
+                "/com/griddynamics/spring/nested/wildcards/sub1/*.xml",
+                "/com/griddynamics/spring/nested/wildcards/sub2/ctx6.xml",
                 "/com/griddynamics/spring/nested/wildcards/ctx*.xml"
+            }
         );
 
         assertEquals(8, registry.getConfigLocations().length);
@@ -51,11 +53,12 @@ public class WildcardsTest {
 
     @Test
     public void wildcardsTest2() throws Exception {
-        registry.setConfigLocation(
-                "classpath:/com/griddynamics/spring/nested/wildcards/sub1/ctx1.xml\n" +
-                "/com/griddynamics/spring/nested/wildcards/sub1/ctx1.xml\n" +
-                "classpath:/com/griddynamics/spring/nested/wildcards/sub1/ctx1.xml\n" +
-                "classpath:/com/griddynamics/spring/nested/wildcards/sub1/ctx1*.xml\n"
+        registry.setConfigLocations(new String[] {
+                "classpath:/com/griddynamics/spring/nested/wildcards/sub1/ctx1.xml",
+                "/com/griddynamics/spring/nested/wildcards/sub1/ctx1.xml",
+                "classpath:/com/griddynamics/spring/nested/wildcards/sub1/ctx1.xml",
+                "classpath:/com/griddynamics/spring/nested/wildcards/sub1/ctx1*.xml"
+            }
         );
 
         assertEquals(1, registry.getConfigLocations().length);
