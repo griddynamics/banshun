@@ -2,6 +2,7 @@ package com.griddynamics.spring.nested;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanCreationException;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +35,7 @@ public class DependencySorter {
     private static final Logger logGraph = LoggerFactory.getLogger("spring.nested.dependencies.graph");
     private List<Location> conflictContextGroup = Collections.emptyList();
     private static Pattern locationNamePattern = Pattern.compile("[A-Za-z0-9\\.\\$_-]*\\.xml");
+    private boolean prohibitCycles = true;
 
     interface Predicate {
         boolean isValid(Location s);
@@ -61,6 +63,11 @@ public class DependencySorter {
         public Set<BeanReferenceInfo> getExportBeans() {
             return exportBeans;
         }
+    }
+
+
+    public void setProhibitCycles(boolean prohibitCycles) {
+        this.prohibitCycles = prohibitCycles;
     }
 
     List<Location> locations = new LinkedList<Location>();
@@ -156,7 +163,11 @@ public class DependencySorter {
         List<Location> tail = pullLocationListTail(list);
         if (!list.isEmpty()) {
             conflictContextGroup = list;
-            warningMessage(list);
+            if (!prohibitCycles) {
+                warningMessage(list);
+            } else {
+                throw new BeanCreationException("Conflict in nested context dependencies was found. Check the following list of suspect contexts: " + getCycleOfContexts(list));
+            }
         } else {
             conflictContextGroup = Collections.emptyList();
         }
@@ -204,6 +215,10 @@ public class DependencySorter {
     }
 
     private void warningMessage(LinkedList<Location> list) {
+        log.warn("Conflict in nested context dependencies was found. Please check the following list of suspect contexts: " + getCycleOfContexts(list));
+    }
+
+    private String getCycleOfContexts(LinkedList<Location> list) {
         StringBuilder sb = new StringBuilder();
         for (Iterator<Location> listIterator = list.iterator(); listIterator.hasNext();) {
             Location context = listIterator.next();
@@ -212,7 +227,7 @@ public class DependencySorter {
                 sb.append(", ");
             }
         }
-        log.warn("Conflict in nested context dependencies was found. Please check the following list of suspect contexts: " + sb);
+        return sb.toString();
     }
 
     private String getSimpleLocationName(String contextName) {

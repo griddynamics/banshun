@@ -55,6 +55,7 @@ public class DependencySorterTest {
     public void sortWithConflicts() {
         fillLocationsWithConlicts();
         DependencySorter sorter = new DependencySorter(getLocations(), getImports(), getExports());
+        sorter.setProhibitCycles(false);
         String[] locations = sorter.sort();
         checkLocations(locations, new String[]{"some2.test.location.xml", "some1.test.location.xml", "some3.test.location.xml", "some4.test.location.xml", "some5.test.location.xml"});
         checkLocations(sorter.getConflictContextGroup(), new String[]{"some3.test.location.xml", "some4.test.location.xml"});

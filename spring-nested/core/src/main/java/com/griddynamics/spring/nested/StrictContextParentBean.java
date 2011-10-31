@@ -36,6 +36,12 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
     private List<String> runOnlyServices = new ArrayList<String>();
     private Map<String, HashSet<String>> locationOppositeDependencies;
 
+    private boolean prohibitCycles = true;
+
+    public void setProhibitCycles(boolean prohibitCycles) {
+        this.prohibitCycles = prohibitCycles;
+    }
+
     public String getName() {
         return name;
     }
@@ -105,6 +111,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
         }
 
         DependencySorter sorter = new DependencySorter(getConfigLocations(), analyzer.getImports(), analyzer.getExports());
+        sorter.setProhibitCycles(prohibitCycles);
 
         filterConfigLocations(limitedLocations, sorter.sort(), analyzer.getImports(), analyzer.getExports());
 
