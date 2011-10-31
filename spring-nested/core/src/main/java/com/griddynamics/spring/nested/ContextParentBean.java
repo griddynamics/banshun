@@ -46,7 +46,8 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     protected ApplicationContext context;
     private List<ConfigurableApplicationContext> children = new ArrayList<ConfigurableApplicationContext>();
 
-    protected String[] configLocations;
+    protected String[] configLocations = new String[0];
+    protected List<String> excludeConfigLocations = new ArrayList<String>();
     protected Set<String> failedLocations = new HashSet<String>();
 
     private boolean strictErrorHandling = false;
@@ -70,10 +71,17 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         this.childContextPrototype = childContextPrototype;
     }
 
+    public void setExcludeConfigLocations(String[] excludeConfigLocations) {
+        this.excludeConfigLocations = Arrays.asList(excludeConfigLocations);
+    }
+
     /**
      * resolves configs paths and build nested children contexts
      */
     public void afterPropertiesSet() throws Exception {
+        resolveConfigLocations();
+        excludeConfigLocations();
+
         for (String loc : configLocations) {
             if (failedLocations.contains(loc)) {
                 continue;
@@ -104,6 +112,48 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
                 addToFailedLocations(loc);
             }
         }
+    }
+
+    protected void resolveConfigLocations() throws Exception {
+        List<String> configLocs = new ArrayList<String>();
+        PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
+
+        for (int i = 0; i < configLocations.length; i++) {
+            String location = (SystemPropertyUtils.resolvePlaceholders(configLocations[i])).trim();
+            boolean isPattern = pmrpr.getPathMatcher().isPattern(location);
+
+            Resource[] resources = pmrpr.getResources(location);
+            for (Resource resource : resources) {
+                String locName = resource.getURI().toString();
+                if (!configLocs.contains(locName) && isPattern) {
+                    configLocs.add(locName);
+                }
+                if (!isPattern) {
+                    configLocs.remove(locName);
+                    configLocs.add(locName);
+                }
+            }
+        }
+
+        log.info("Locations were resolved to that sequence: " + configLocs.toString());
+        configLocations = configLocs.toArray(new String[0]);
+    }
+
+    private void excludeConfigLocations() throws Exception {
+        List<String> res = new ArrayList<String>(Arrays.asList(configLocations));
+        PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
+
+        for (String loc : excludeConfigLocations) {
+            String location = (SystemPropertyUtils.resolvePlaceholders(loc)).trim();
+
+            Resource[] resources = pmrpr.getResources(location);
+            for (Resource resource : resources) {
+                String locName = resource.getURI().toString();
+                res.remove(locName);
+            }
+        }
+
+        configLocations = res.toArray(new String[0]);
     }
 
     protected void addToFailedLocations(String loc) {
@@ -161,29 +211,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     public void setConfigLocations(String[] locations) throws Exception {
         Assert.noNullElements(locations, "Config locations must not be null");
 
-        List<String> configLocs = new ArrayList<String>();
-        PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
-
-        for (int i = 0; i < locations.length; i++) {
-            String location = (SystemPropertyUtils.resolvePlaceholders(locations[i])).trim();
-            boolean isPattern = pmrpr.getPathMatcher().isPattern(location);
-
-            Resource[] resources = pmrpr.getResources(location);
-            for (Resource resource : resources) {
-                String locName = resource.getURI().toString();
-                if (!configLocs.contains(locName) && isPattern) {
-                    configLocs.add(locName);
-                }
-                if (!isPattern) {
-                    configLocs.remove(locName);
-                    configLocs.add(locName);
-                }
-            }
-        }
-
-        configLocations = configLocs.toArray(new String[0]);
-
-        log.info("Locations were resolved to that sequence: " + configLocs.toString());
+        configLocations = locations;
     }
 
     /**
@@ -216,7 +244,6 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         }
 
         return null;
-//        return registry.export(ref);
     }
 
     @SuppressWarnings("unchecked")
@@ -244,7 +271,6 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
 
             return context.getBean(beanDefinitionName, clazz);
         }
-//        return registry.lookup(name, clazz);
     }
 
     public void destroy() throws Exception {

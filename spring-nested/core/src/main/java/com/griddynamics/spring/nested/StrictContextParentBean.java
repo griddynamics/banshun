@@ -60,8 +60,12 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        super.resolveConfigLocations();
         analyzeDependencies();
         super.afterPropertiesSet();
+    }
+
+    protected void resolveConfigLocations() throws Exception {
     }
 
     protected void addToFailedLocations(String loc) {
