@@ -34,6 +34,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
 
     private String name;
     private List<String> runOnlyServices = new ArrayList<String>();
+    private Map<String, HashSet<String>> locationOppositeDependencies;
 
     public String getName() {
         return name;
@@ -55,6 +56,11 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
     public void afterPropertiesSet() throws Exception {
         analyzeDependencies();
         super.afterPropertiesSet();
+    }
+
+    protected void addToFailedLocations(String loc) {
+        failedLocations = new HashSet<String>();
+        markDependencies(loc, failedLocations, locationOppositeDependencies);
     }
 
     private void analyzeDependencies() throws Exception {
@@ -158,22 +164,29 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
         return runOnlyServices.contains(beanName);
     }
 
-    private void filterConfigLocations(List<String> limitedLocations, String[] allLocations, Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
+    private void filterConfigLocations(List<String> limitedLocations, String[] allLocations,
+            Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
         Map<String, HashSet<String>> locationDependencies = new HashMap<String, HashSet<String>>();
+        locationOppositeDependencies = new HashMap<String, HashSet<String>>();
+
         for (String beanName : imports.keySet()) {
             String expLoc = exports.get(beanName).getLocation();
+            if (!locationOppositeDependencies.containsKey(expLoc)) {
+                locationOppositeDependencies.put(expLoc, new HashSet<String>());
+            }
             for (BeanReferenceInfo refInfo : imports.get(beanName)) {
                 if (!locationDependencies.containsKey(refInfo.getLocation())) {
                     locationDependencies.put(refInfo.getLocation(), new HashSet<String>());
                 }
                 locationDependencies.get(refInfo.getLocation()).add(expLoc);
+                locationOppositeDependencies.get(expLoc).add(refInfo.getLocation());
             }
         }
 
         Set<String> marked = new HashSet<String>();
         if (!limitedLocations.isEmpty()) {
             for (String loc : limitedLocations) {
-                markDependencies(locationDependencies, loc, marked);
+                markDependencies(loc, marked, locationDependencies);
             }
 
             List<String> resultLocationList = new ArrayList<String>();
@@ -186,13 +199,12 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
         }
     }
 
-    private void markDependencies(Map<String, HashSet<String>> locationDependencies, String loc, Set<String> marked) {
+    private void markDependencies(String loc, Set<String> marked, Map<String, HashSet<String>> locationDependencies) {
         marked.add(loc);
         if (locationDependencies.containsKey(loc)) {
             for (String dependsOn : locationDependencies.get(loc)) {
                 if (!marked.contains(dependsOn)) {
-                    marked.add(dependsOn);
-                    markDependencies(locationDependencies, dependsOn, marked);
+                    markDependencies(dependsOn, marked, locationDependencies);
                 }
             }
         }

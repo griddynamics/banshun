@@ -9,6 +9,20 @@ import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
+/**
+ * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
+ * Reserved http://www.griddynamics.com
+ *
+ * For information about the licensing and copyright of this document please
+ * contact Grid Dynamics at info@griddynamics.com.
+ *
+ * $Id: $
+ *
+ * @Project: Spring Nested
+ * @Description:
+ *
+ */
+
 public class DynamicProfilesTest {
     @Test
     public void dynamicProfileTest0() throws Exception {

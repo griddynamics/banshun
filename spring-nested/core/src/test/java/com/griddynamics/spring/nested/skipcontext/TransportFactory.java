@@ -1,4 +1,6 @@
-package com.griddynamics.spring.nested.autoproxy;
+package com.griddynamics.spring.nested.skipcontext;
+
+import com.griddynamics.spring.nested.analyzer.SuperInterface;
 
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
@@ -14,14 +16,8 @@ package com.griddynamics.spring.nested.autoproxy;
  *
  */
 
-public class CustomerServiceImpl implements CustomerService {
-    private String name;
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
+public class TransportFactory {
+    public static SuperInterface getObject() throws Exception {
+        throw new Exception("exception!");
     }
 }

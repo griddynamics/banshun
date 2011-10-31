@@ -15,7 +15,6 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 import org.springframework.util.SystemPropertyUtils;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
@@ -48,6 +47,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     private List<ConfigurableApplicationContext> children = new ArrayList<ConfigurableApplicationContext>();
 
     protected String[] configLocations;
+    protected Set<String> failedLocations = new HashSet<String>();
 
     private boolean strictErrorHandling = false;
     private String childContextPrototype = null;
@@ -75,6 +75,9 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
      */
     public void afterPropertiesSet() throws Exception {
         for (String loc : configLocations) {
+            if (failedLocations.contains(loc)) {
+                continue;
+            }
             // attempt to resolve classpath*:
             try {
                 Resource[] resources = context.getResources(loc);
@@ -89,6 +92,8 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
                             throw e;
                         }
                         nestedContextsExceptions.put(loc, e);
+                        addToFailedLocations(loc);
+                        break;
                     }
                 }
             } catch (IOException e) {
@@ -96,8 +101,16 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
                 if (strictErrorHandling) {
                     throw e;
                 }
+                addToFailedLocations(loc);
             }
         }
+    }
+
+    protected void addToFailedLocations(String loc) {
+    }
+
+    public Set<String> getFailedLocations() {
+        return failedLocations;
     }
 
     public void onApplicationEvent(ApplicationEvent event) {

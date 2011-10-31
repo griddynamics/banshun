@@ -1,7 +1,6 @@
 package com.griddynamics.spring.nested;
 
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
-import org.springframework.aop.target.LazyInitTargetSource;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
