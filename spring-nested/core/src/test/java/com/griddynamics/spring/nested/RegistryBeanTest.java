@@ -101,7 +101,7 @@ public class RegistryBeanTest extends TestCase {
         Assert.assertFalse("have export ref", hasExport(ctx, "just-bean"));
 
         Assert.assertEquals("proxies should refer the same bean instance", proxy.toString(), ctx.getBean("late-import").toString());
-        Assert.assertSame("proxies should refer the same bean instance", proxy, ctx.getBean("late-import"));
+        Assert.assertSame("proxies should be the same instance", proxy, ctx.getBean("late-import"));
         Assert.assertTrue("early import gives us a proxy", proxy instanceof Proxy);
         Assert.assertTrue("late import gives us a proxy", ctx.getBean("late-import") instanceof Proxy);
     }
@@ -109,7 +109,7 @@ public class RegistryBeanTest extends TestCase {
     private boolean hasExport(ClassPathXmlApplicationContext ctx, String bean) {
         String beanName = bean + ContextParentBean.TARGET_SOURCE_SUFFIX;
         if (ctx.containsBean(beanName)) {
-            ExportLazyInitTargetSource elits = (ExportLazyInitTargetSource) ctx.getBean(beanName, TargetSource.class);
+            ExportTargetSource elits = (ExportTargetSource) ctx.getBean(beanName, TargetSource.class);
             return elits.getBeanFactory() == null;
         }
         return false;
@@ -119,7 +119,7 @@ public class RegistryBeanTest extends TestCase {
         String[] beanNames = ctx.getBeanNamesForType(TargetSource.class);
         for (String beanName : beanNames) {
             if (beanName.contains(ContextParentBean.TARGET_SOURCE_SUFFIX)) {
-                ExportLazyInitTargetSource elits = (ExportLazyInitTargetSource) ctx.getBean(beanName, TargetSource.class);
+                ExportTargetSource elits = (ExportTargetSource) ctx.getBean(beanName, TargetSource.class);
                 if (elits.getBeanFactory() != null) {
                     return false;
                 }

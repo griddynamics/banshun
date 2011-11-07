@@ -6,11 +6,12 @@ import java.util.Map;
 
 import com.griddynamics.spring.nested.ContextParentBean;
 import com.griddynamics.spring.nested.Registry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.*;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.OrderComparator;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.AbstractUrlHandlerMapping;
@@ -27,16 +28,23 @@ import org.springframework.web.servlet.handler.AbstractUrlHandlerMapping;
  * @Project: Spring Nested
  * @Description:
  */
-public class ScanChildrenHandlerMapping extends ContextParentAnnotationHandlerMapping implements InitializingBean {
-    private static final Class[] defaultHandlerMappingClasses = new Class[] {org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping.class, org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping.class};
+public class ScanChildrenHandlerMapping extends ContextParentAnnotationHandlerMapping implements ApplicationListener {
+    private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
+    private static final Class[] defaultHandlerMappingClasses = new Class[]{org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping.class, org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping.class};
     private Registry parentBean = null;
 
     public void setParentBean(Registry parentBean) {
         this.parentBean = parentBean;
     }
 
-    public void afterPropertiesSet() throws Exception {
-        List<ConfigurableApplicationContext> children = ((ContextParentBean)parentBean).getChildren();
+    public void onApplicationEvent(ApplicationEvent event) {
+        if (event instanceof ContextRefreshedEvent) {
+            scanChildContexts();
+        }
+    }
+
+    public void scanChildContexts() {
+        List<ConfigurableApplicationContext> children = ((ContextParentBean) parentBean).getChildren();
         for (ConfigurableApplicationContext child : children) {
             createHandlerMappingsAndRegisterHandlers(child);
         }
@@ -65,7 +73,7 @@ public class ScanChildrenHandlerMapping extends ContextParentAnnotationHandlerMa
             for (String url : handlerMap.keySet()) {
                 Object handler = handlerMap.get(url);
                 registerHandler(url, handler);
-             }
+            }
         }
     }
 

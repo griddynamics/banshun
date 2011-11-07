@@ -33,7 +33,6 @@
         </property>
     </bean>
 
-
     <bean name="export-declaration" factory-bean="root" factory-method="export">
         <constructor-arg>
             <bean class="com.griddynamics.spring.nested.ExportRef">

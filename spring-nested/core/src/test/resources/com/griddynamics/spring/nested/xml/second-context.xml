@@ -18,5 +18,5 @@
          http://www.griddynamics.com/schema/nested http://www.griddynamics.com/schema/nested/nested-schema.xsd
        ">
 
-    <bean name="secondChild" class="com.griddynamics.spring.nested.xml.ChildImpl" lazy-init="true"/>
+    <bean name="secondChild" class="com.griddynamics.spring.nested.xml.ChildImpl"/>
 </beans>

@@ -2,7 +2,6 @@ package com.griddynamics.spring.nested;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.aop.TargetSource;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -81,12 +80,13 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     public void afterPropertiesSet() throws Exception {
         resolveConfigLocations();
         excludeConfigLocations();
+    }
 
+    private void initializeChildContexts() {
         for (String loc : configLocations) {
             if (failedLocations.contains(loc)) {
                 continue;
             }
-            // attempt to resolve classpath*:
             try {
                 Resource[] resources = context.getResources(loc);
 
@@ -97,7 +97,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
                     } catch (Exception e) {
                         log.error(String.format("Failed to process resource [%s] from location [%s] ", res.getURL(), loc), e);
                         if (strictErrorHandling) {
-                            throw e;
+                            throw new RuntimeException(e);
                         }
                         nestedContextsExceptions.put(loc, e);
                         addToFailedLocations(loc);
@@ -107,7 +107,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
             } catch (IOException e) {
                 log.error(String.format("Failed to process configuration from [%s]", loc), e);
                 if (strictErrorHandling) {
-                    throw e;
+                    throw new RuntimeException(e);
                 }
                 addToFailedLocations(loc);
             }
@@ -166,18 +166,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof ContextRefreshedEvent) {
             if (context.equals(((ContextRefreshedEvent) event).getApplicationContext())) {
-                ConfigurableBeanFactory factory = ((AbstractApplicationContext) context).getBeanFactory();
-                String[] singletonNames = factory.getSingletonNames();
-                for (String singletonName : singletonNames) {
-                    if (singletonName.contains(TARGET_SOURCE_SUFFIX)) {
-                        String name = singletonName.split(ContextParentBean.TARGET_SOURCE_SUFFIX)[0]
-                                + ContextParentBean.BEAN_DEF_SUFFIX;
-                        if (!context.containsBean(name)) {
-                            ((BeanDefinitionRegistry) factory).registerBeanDefinition(name,
-                                    BeanDefinitionBuilder.genericBeanDefinition(factory.getBean(singletonName, TargetSource.class).getTargetClass()).getBeanDefinition());
-                        }
-                    }
-                }
+                initializeChildContexts();
             }
         }
     }
@@ -229,18 +218,13 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         String singletonBeanName = ref.getTarget() + TARGET_SOURCE_SUFFIX;
 
         if (!context.containsBean(singletonBeanName)) {
-            ExportLazyInitTargetSource exportLazyInitTargetSource = new ExportLazyInitTargetSource();
-            exportLazyInitTargetSource.setTargetBeanName(ref.getTarget());
-            exportLazyInitTargetSource.setBeanFactory(ref.getBeanFactory());
-            exportLazyInitTargetSource.setTargetClass(ref.getInterfaceClass());
-            exportLazyInitTargetSource.setExportClass(ref.getInterfaceClass());
+            ExportTargetSource exportTargetSource = new ExportTargetSource();
+            exportTargetSource.setTargetBeanName(ref.getTarget());
+            exportTargetSource.setTargetClass(ref.getInterfaceClass());
+            exportTargetSource.setBeanFactory(ref.getBeanFactory());
 
             ((AbstractApplicationContext) context).getBeanFactory()
-                    .registerSingleton(singletonBeanName, exportLazyInitTargetSource);
-        } else {
-            ExportLazyInitTargetSource exportLazyInitTargetSource = (ExportLazyInitTargetSource) context.getBean(singletonBeanName, TargetSource.class);
-            exportLazyInitTargetSource.setBeanFactory(ref.getBeanFactory());
-            exportLazyInitTargetSource.setExportClass(ref.getInterfaceClass());
+                    .registerSingleton(singletonBeanName, exportTargetSource);
         }
 
         return null;
@@ -253,24 +237,14 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         }
 
         String beanDefinitionName = name + BEAN_DEF_SUFFIX;
-        String singletonBeanName = name + TARGET_SOURCE_SUFFIX;
 
-        if (context.containsBean(beanDefinitionName)) {
-            return context.getBean(beanDefinitionName, clazz);
-        } else {
-            ExportLazyInitTargetSource exportLazyInitTargetSource = new ExportLazyInitTargetSource();
-            exportLazyInitTargetSource.setTargetBeanName(name);
-            exportLazyInitTargetSource.setTargetClass(clazz);
-
-            ((AbstractApplicationContext) context).getBeanFactory()
-                    .registerSingleton(singletonBeanName, exportLazyInitTargetSource);
-
+        if (!context.containsBean(beanDefinitionName)) {
             ConfigurableBeanFactory factory = ((AbstractApplicationContext) context).getBeanFactory();
             ((BeanDefinitionRegistry) factory).registerBeanDefinition(beanDefinitionName,
                     BeanDefinitionBuilder.genericBeanDefinition(clazz).getBeanDefinition());
-
-            return context.getBean(beanDefinitionName, clazz);
         }
+
+        return context.getBean(beanDefinitionName, clazz);
     }
 
     public void destroy() throws Exception {
