@@ -17,6 +17,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.SystemPropertyUtils;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
@@ -120,23 +121,35 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
 
         for (int i = 0; i < configLocations.length; i++) {
             String location = (SystemPropertyUtils.resolvePlaceholders(configLocations[i])).trim();
-            boolean isPattern = pmrpr.getPathMatcher().isPattern(location);
-
-            Resource[] resources = pmrpr.getResources(location);
-            for (Resource resource : resources) {
-                String locName = resource.getURI().toString();
-                if (!configLocs.contains(locName) && isPattern) {
-                    configLocs.add(locName);
-                }
-                if (!isPattern) {
-                    configLocs.remove(locName);
-                    configLocs.add(locName);
-                }
+            try {
+                addConfigLocations(pmrpr, location, configLocs, false);
+            } catch (Exception e) {
+                addConfigLocations(pmrpr, "file:" + location, configLocs, true);
             }
         }
 
         log.info("Locations were resolved to that sequence: " + configLocs.toString());
         configLocations = configLocs.toArray(new String[0]);
+    }
+
+    private void addConfigLocations(PathMatchingResourcePatternResolver pmrpr, String location,
+                                    List<String> configLocs, boolean isFileConfLoc) throws Exception {
+        boolean isPattern = pmrpr.getPathMatcher().isPattern(location);
+        Resource[] resources = pmrpr.getResources(location);
+        for (Resource resource : resources) {
+            String locName = !isFileConfLoc ? resource.getURI().toString() : removeStandardPrefix(resource.getURI().toString());
+            if (!configLocs.contains(locName) && isPattern) {
+                configLocs.add(locName);
+            }
+            if (!isPattern) {
+                configLocs.remove(locName);
+                configLocs.add(locName);
+            }
+        }
+    }
+
+    private String removeStandardPrefix(String location) {
+        return location.replace("file:/", "").replace("file:", "");
     }
 
     private void excludeConfigLocations() throws Exception {
@@ -146,14 +159,23 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         for (String loc : excludeConfigLocations) {
             String location = (SystemPropertyUtils.resolvePlaceholders(loc)).trim();
 
-            Resource[] resources = pmrpr.getResources(location);
-            for (Resource resource : resources) {
-                String locName = resource.getURI().toString();
-                res.remove(locName);
+            try {
+                removeConfigLocations(pmrpr, location, res, false);
+            } catch (Exception e) {
+                removeConfigLocations(pmrpr, "file:" + location, res, true);
             }
         }
 
         configLocations = res.toArray(new String[0]);
+    }
+
+    private void removeConfigLocations(PathMatchingResourcePatternResolver pmrpr, String location,
+                                    List<String> configLocs, boolean isFileConfLoc) throws Exception {
+        Resource[] resources = pmrpr.getResources(location);
+        for (Resource resource : resources) {
+            String locName = !isFileConfLoc ? resource.getURI().toString() : removeStandardPrefix(resource.getURI().toString());
+            configLocs.remove(locName);
+        }
     }
 
     protected void addToFailedLocations(String loc) {

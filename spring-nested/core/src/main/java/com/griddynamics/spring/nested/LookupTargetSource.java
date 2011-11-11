@@ -1,11 +1,8 @@
 package com.griddynamics.spring.nested;
 
 import org.springframework.aop.TargetSource;
-import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.*;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -20,30 +17,66 @@ import org.springframework.context.ApplicationContext;
  * @Project: Spring Nested
  * @Description:
  */
-public class LookupTargetSource extends AbstractBeanFactoryBasedTargetSource {
-    private Object target;
+public class LookupTargetSource implements TargetSource {
+    private volatile Object target;
     private ApplicationContext context;
     private ExportTargetSource ets = null;
+
+    private String targetBeanName;
+    private String actualBeanName;
+    private Class<?> targetClass;
+
+    public void setTargetBeanName(String targetBeanName) {
+        actualBeanName = targetBeanName.split(ContextParentBean.TARGET_SOURCE_SUFFIX)[0];
+        this.targetBeanName = targetBeanName;
+    }
+
+    public String getTargetBeanName() {
+        return this.targetBeanName;
+    }
+
+    public void setTargetClass(Class targetClass) {
+        this.targetClass = targetClass;
+    }
+
+    @Override
+    public Class<?> getTargetClass() {
+        return this.targetClass;
+    }
 
     public void setApplicationContext(ApplicationContext context) {
         this.context = context;
     }
 
     @Override
-    public Object getTarget() throws BeansException {
-        String actualBeanName = getTargetBeanName().split(ContextParentBean.TARGET_SOURCE_SUFFIX)[0];
+    public boolean isStatic() {
+        return false;
+    }
 
-        if (context.containsBean(getTargetBeanName())) {
-            ets = (ExportTargetSource) context.getBean(getTargetBeanName(), TargetSource.class);
-            checkForCorrectAssignment(ets.getTargetClass(), actualBeanName);
-            if (target == null) {
-                this.target = ets.getTarget();
+    @Override
+    public void releaseTarget(Object target) throws Exception {
+    }
+    
+    @Override
+    public Object getTarget() throws BeansException {
+        Object localTarget = target;
+        if (localTarget == null) {
+            synchronized (this) {
+                localTarget = target;
+                if (localTarget == null) {
+                    if (context.containsBean(getTargetBeanName())) {
+                        ets = (ExportTargetSource) context.getBean(getTargetBeanName(), TargetSource.class);
+                        checkForCorrectAssignment(ets.getTargetClass(), actualBeanName);
+                        target = ets.getTarget();
+                    } else {
+                        throw new NoSuchBeanDefinitionException(actualBeanName, "can't find export declaration for lookup("
+                                + actualBeanName + "," + getTargetClass() + ")");
+                    }
+                }
             }
-            return this.target;
-        } else {
-            throw new NoSuchBeanDefinitionException(actualBeanName, "can't find export declaration for lookup("
-                    + actualBeanName + "," + getTargetClass() + ")");
         }
+
+        return target;
     }
 
     private void checkForCorrectAssignment(Class exportClass, String actualBeanName) {

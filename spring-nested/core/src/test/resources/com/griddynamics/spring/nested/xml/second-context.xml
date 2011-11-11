@@ -15,7 +15,7 @@
        xmlns:nested="http://www.griddynamics.com/schema/nested"
        xsi:schemaLocation="
          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-         http://www.griddynamics.com/schema/nested http://www.griddynamics.com/schema/nested/nested-schema.xsd
+         http://www.griddynamics.com/schema/nested http://www.griddynamics.com/schema/nested/gd-nested-schema.xsd
        ">
 
     <bean name="secondChild" class="com.griddynamics.spring.nested.xml.ChildImpl"/>

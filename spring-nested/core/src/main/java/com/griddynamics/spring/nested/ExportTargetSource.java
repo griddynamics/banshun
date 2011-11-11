@@ -1,9 +1,8 @@
 package com.griddynamics.spring.nested;
 
-import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
+import org.springframework.aop.TargetSource;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 /**
@@ -18,14 +17,58 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
  * @Project: Spring Nested
  * @Description:
  */
-public class ExportTargetSource extends AbstractBeanFactoryBasedTargetSource {
-    private Object target;
+public class ExportTargetSource implements TargetSource {
+    private volatile Object target;
+    private String targetBeanName;
+    private Class<?> targetClass;
+    private BeanFactory beanFactory;
+
+    public BeanFactory getBeanFactory() {
+        return beanFactory;
+    }
+
+    public void setBeanFactory(BeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
+    public void setTargetBeanName(String targetBeanName) {
+        this.targetBeanName = targetBeanName;
+    }
+
+    public String getTargetBeanName() {
+        return this.targetBeanName;
+    }
+
+    public void setTargetClass(Class targetClass) {
+        this.targetClass = targetClass;
+    }
+
+    @Override
+    public Class<?> getTargetClass() {
+        return this.targetClass;
+    }
+
+    @Override
+    public boolean isStatic() {
+        return true;
+    }
+
+    @Override
+    public void releaseTarget(Object target) throws Exception {
+    }
 
     @Override
     public Object getTarget() throws BeansException {
-        if (target == null) {
-            this.target = getBeanFactory().getBean(getTargetBeanName());
+        Object localTarget = target;
+        if (localTarget == null) {
+            synchronized (this) {
+                localTarget = target;
+                if (localTarget == null) {
+                    target = getBeanFactory().getBean(getTargetBeanName());
+                }
+            }
         }
-        return this.target;
+
+        return target;
     }
 }
