@@ -17,7 +17,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.SystemPropertyUtils;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
@@ -39,7 +38,7 @@ import java.util.*;
  * intended for the current usage
  */
 public class ContextParentBean implements InitializingBean, ApplicationContextAware, Registry, DisposableBean
-        , ApplicationListener {
+        , ApplicationListener, ExceptionsLogger {
     private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
     private Map<String, Exception> nestedContextsExceptions = new LinkedHashMap<String, Exception>();
 
@@ -48,7 +47,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
 
     protected String[] configLocations = new String[0];
     protected List<String> excludeConfigLocations = new ArrayList<String>();
-    protected Set<String> failedLocations = new HashSet<String>();
+    protected Set<String> ignoredLocations = new HashSet<String>();
 
     private boolean strictErrorHandling = false;
     private String childContextPrototype = null;
@@ -81,11 +80,15 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     public void afterPropertiesSet() throws Exception {
         resolveConfigLocations();
         excludeConfigLocations();
+        analyzeDependencies();
+    }
+
+    protected void analyzeDependencies() throws Exception {
     }
 
     private void initializeChildContexts() {
         for (String loc : configLocations) {
-            if (failedLocations.contains(loc)) {
+            if (ignoredLocations.contains(loc)) {
                 continue;
             }
             try {
@@ -152,7 +155,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         return location.replace("file:/", "").replace("file:", "");
     }
 
-    private void excludeConfigLocations() throws Exception {
+    protected void excludeConfigLocations() throws Exception {
         List<String> res = new ArrayList<String>(Arrays.asList(configLocations));
         PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
 
@@ -181,8 +184,8 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     protected void addToFailedLocations(String loc) {
     }
 
-    public Set<String> getFailedLocations() {
-        return failedLocations;
+    public Set<String> getIgnoredLocations() {
+        return ignoredLocations;
     }
 
     public void onApplicationEvent(ApplicationEvent event) {
@@ -205,6 +208,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         return new SingleResourceXmlChildContext(res, parent);
     }
 
+    @Override
     public Map<String, Exception> getNestedContextsExceptions() {
         return nestedContextsExceptions;
     }
@@ -240,10 +244,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         String singletonBeanName = ref.getTarget() + TARGET_SOURCE_SUFFIX;
 
         if (!context.containsBean(singletonBeanName)) {
-            ExportTargetSource exportTargetSource = new ExportTargetSource();
-            exportTargetSource.setTargetBeanName(ref.getTarget());
-            exportTargetSource.setTargetClass(ref.getInterfaceClass());
-            exportTargetSource.setBeanFactory(ref.getBeanFactory());
+            ExportTargetSource exportTargetSource = new ExportTargetSource(ref.getTarget(), ref.getInterfaceClass(), ref.getBeanFactory());
 
             ((AbstractApplicationContext) context).getBeanFactory()
                     .registerSingleton(singletonBeanName, exportTargetSource);

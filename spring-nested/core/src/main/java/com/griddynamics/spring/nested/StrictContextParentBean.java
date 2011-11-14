@@ -34,7 +34,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
 
     private String name;
     private List<String> runOnlyServices = new ArrayList<String>();
-    private Map<String, HashSet<String>> locationOppositeDependencies;
+    private Map<String, HashSet<String>> importsByExport;
 
     private boolean prohibitCycles = true;
 
@@ -59,21 +59,16 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        super.resolveConfigLocations();
-        analyzeDependencies();
-        super.afterPropertiesSet();
-    }
-
     protected void resolveConfigLocations() throws Exception {
     }
 
+    @Override
     protected void addToFailedLocations(String loc) {
-        failedLocations = new HashSet<String>();
-        markDependencies(loc, failedLocations, locationOppositeDependencies);
+        transitiveClosure(loc, ignoredLocations, importsByExport);
     }
 
-    private void analyzeDependencies() throws Exception {
+    @Override
+    protected void analyzeDependencies() throws Exception {
         ContextAnalyzer analyzer = new ContextAnalyzer();
         List<Exception> exceptions = new LinkedList<Exception>();
 
@@ -177,45 +172,42 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
 
     private void filterConfigLocations(List<String> limitedLocations, String[] allLocations,
             Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
-        Map<String, HashSet<String>> locationDependencies = new HashMap<String, HashSet<String>>();
-        locationOppositeDependencies = new HashMap<String, HashSet<String>>();
+        Map<String, HashSet<String>> exportsByImport = new HashMap<String, HashSet<String>>();
+        importsByExport = new HashMap<String, HashSet<String>>();
 
         for (String beanName : imports.keySet()) {
             String expLoc = exports.get(beanName).getLocation();
-            if (!locationOppositeDependencies.containsKey(expLoc)) {
-                locationOppositeDependencies.put(expLoc, new HashSet<String>());
+            if (!importsByExport.containsKey(expLoc)) {
+                importsByExport.put(expLoc, new HashSet<String>());
             }
             for (BeanReferenceInfo refInfo : imports.get(beanName)) {
-                if (!locationDependencies.containsKey(refInfo.getLocation())) {
-                    locationDependencies.put(refInfo.getLocation(), new HashSet<String>());
+                if (!exportsByImport.containsKey(refInfo.getLocation())) {
+                    exportsByImport.put(refInfo.getLocation(), new HashSet<String>());
                 }
-                locationDependencies.get(refInfo.getLocation()).add(expLoc);
-                locationOppositeDependencies.get(expLoc).add(refInfo.getLocation());
+                exportsByImport.get(refInfo.getLocation()).add(expLoc);
+                importsByExport.get(expLoc).add(refInfo.getLocation());
             }
         }
 
         Set<String> marked = new HashSet<String>();
         if (!limitedLocations.isEmpty()) {
             for (String loc : limitedLocations) {
-                markDependencies(loc, marked, locationDependencies);
+                transitiveClosure(loc, marked, exportsByImport);
             }
 
-            List<String> resultLocationList = new ArrayList<String>();
-            for (String location : allLocations) {
-                if (marked.contains(location)) {
-                    resultLocationList.add(location);
-                }
-            }
+            List<String> resultLocationList = new ArrayList<String>(Arrays.asList(allLocations));
+            resultLocationList.retainAll(marked);
+
             this.configLocations = resultLocationList.toArray(new String[0]);
         }
     }
 
-    private void markDependencies(String loc, Set<String> marked, Map<String, HashSet<String>> locationDependencies) {
+    private void transitiveClosure(String loc, Set<String> marked, Map<String, HashSet<String>> locationDependencies) {
         marked.add(loc);
         if (locationDependencies.containsKey(loc)) {
             for (String dependsOn : locationDependencies.get(loc)) {
                 if (!marked.contains(dependsOn)) {
-                    markDependencies(dependsOn, marked, locationDependencies);
+                    transitiveClosure(dependsOn, marked, locationDependencies);
                 }
             }
         }

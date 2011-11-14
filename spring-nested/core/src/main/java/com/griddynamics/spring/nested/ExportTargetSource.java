@@ -1,9 +1,12 @@
 package com.griddynamics.spring.nested;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.TargetSource;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
@@ -18,29 +21,26 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
  * @Description:
  */
 public class ExportTargetSource implements TargetSource {
-    private volatile Object target;
-    private String targetBeanName;
-    private Class<?> targetClass;
-    private BeanFactory beanFactory;
+    private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
+
+    private final AtomicReference<Object> target = new AtomicReference<Object>();
+    private final String targetBeanName;
+    private final Class<?> targetClass;
+    private final BeanFactory beanFactory;
+
+
+    public ExportTargetSource(String targetBeanName, Class<?> targetClass, BeanFactory beanFactory) {
+        this.targetBeanName = targetBeanName;
+        this.targetClass = targetClass;
+        this.beanFactory = beanFactory;
+    }
 
     public BeanFactory getBeanFactory() {
         return beanFactory;
     }
 
-    public void setBeanFactory(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
-    }
-
-    public void setTargetBeanName(String targetBeanName) {
-        this.targetBeanName = targetBeanName;
-    }
-
     public String getTargetBeanName() {
         return this.targetBeanName;
-    }
-
-    public void setTargetClass(Class targetClass) {
-        this.targetClass = targetClass;
     }
 
     @Override
@@ -59,16 +59,16 @@ public class ExportTargetSource implements TargetSource {
 
     @Override
     public Object getTarget() throws BeansException {
-        Object localTarget = target;
+        Object localTarget = target.get();
         if (localTarget == null) {
-            synchronized (this) {
-                localTarget = target;
-                if (localTarget == null) {
-                    target = getBeanFactory().getBean(getTargetBeanName());
-                }
+            if (target.compareAndSet(null, localTarget = getBeanFactory().getBean(getTargetBeanName()))) {
+                return localTarget;
+            } else {
+                // log potentially redundant instance initialization
+                log.warn("Bean " + targetBeanName + "were created earlier");
+                return target.get();
             }
         }
-
-        return target;
+        return localTarget;
     }
 }

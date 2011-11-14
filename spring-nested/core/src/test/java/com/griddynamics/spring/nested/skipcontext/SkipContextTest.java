@@ -31,7 +31,7 @@ public class SkipContextTest {
         context = new ClassPathXmlApplicationContext("com/griddynamics/spring/nested/skipcontext/root-ctx.xml");
         StrictContextParentBean registry = (StrictContextParentBean) context.getBean("root");
 
-        Set<String> failedLocations = registry.getFailedLocations();
+        Set<String> failedLocations = registry.getIgnoredLocations();
         assertEquals(5, failedLocations.size());
         assertEquals(2, registry.getChildren().size());
 

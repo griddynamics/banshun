@@ -6,6 +6,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
  * Reserved http://www.griddynamics.com
@@ -19,27 +22,24 @@ import org.springframework.context.ApplicationContextAware;
  * @Description:
  */
 
-public class NestedTargetSourceCreator implements TargetSourceCreator, ApplicationContextAware {
+public class LookupTargetSourceCreator implements TargetSourceCreator, ApplicationContextAware {
     private ApplicationContext context;
 
     public TargetSource getTargetSource(Class beanClass, String beanName) {
-        if (!beanName.contains(ContextParentBean.BEAN_DEF_SUFFIX)) {
+        if (!beanName.endsWith(ContextParentBean.BEAN_DEF_SUFFIX)) {
             return null;
         }
 
-        try {
-            String actualBeanName = beanName.split(ContextParentBean.BEAN_DEF_SUFFIX)[0];
-            String name = actualBeanName + ContextParentBean.TARGET_SOURCE_SUFFIX;
+        Pattern pattern = Pattern.compile("(.*)" + ContextParentBean.BEAN_DEF_SUFFIX);
+        Matcher matcher = pattern.matcher(beanName);
+        matcher.matches();
 
-            LookupTargetSource lts = new LookupTargetSource();
-            lts.setApplicationContext(context);
-            lts.setTargetBeanName(name);
-            lts.setTargetClass(beanClass);
+        String actualBeanName = matcher.group(1);
+        String name = actualBeanName + ContextParentBean.TARGET_SOURCE_SUFFIX;
 
-            return lts;
-        } catch (BeansException ex) {
-            return null;
-        }
+        LookupTargetSource lts = new LookupTargetSource(context, name, beanClass);
+
+        return lts;
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
