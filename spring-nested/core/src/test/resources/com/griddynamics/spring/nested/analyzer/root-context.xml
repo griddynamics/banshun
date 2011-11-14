@@ -17,8 +17,8 @@
     <bean id="childContextPrototype" class="com.griddynamics.spring.nested.SingleResourceXmlChildContext" scope="prototype"/>
 
     <bean name="root" class="com.griddynamics.spring.nested.StrictContextParentBean">
-        <property name="configLocation" value="
-                /com/griddynamics/spring/nested/analyzer/export-context.xml
+        <property name="configLocations" value="
+                /com/griddynamics/spring/nested/analyzer/export-context.xml,
                 /com/griddynamics/spring/nested/analyzer/import-context.xml
         " />
         <property name="strictErrorHandling" value="true" />

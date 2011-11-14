@@ -1,12 +1,10 @@
 package com.griddynamics.spring.nested;
 
-import java.io.IOException;
-import java.util.*;
-
-import org.springframework.aop.TargetSource;
-import org.springframework.aop.target.LazyInitTargetSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.*;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -14,12 +12,14 @@ import org.springframework.context.*;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 import org.springframework.util.SystemPropertyUtils;
 import org.springframework.web.context.support.XmlWebApplicationContext;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Copyright (c) 2011 Grid Dynamics Consulting Services, Inc, All Rights
@@ -32,7 +32,6 @@ import org.slf4j.Logger;
  *
  * @Project: Spring Nested
  * @Description: singleton bean, should be used accordingly with the interface {@link Registry} recommendations.
- * Implementation of the {@link Registry} delegated to simple internal bean {@link RegistryBean}
  * Also, it instantiate the nested children contexts by the given resources. These contexts
  * receives factory bean instantiates this bean as a "parent bean". This bean will be available via
  * this Spring intrinsic feature, by the some well known name.
@@ -47,14 +46,16 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     protected ApplicationContext context;
     private List<ConfigurableApplicationContext> children = new ArrayList<ConfigurableApplicationContext>();
 
-    private String[] configLocations;
+    protected String[] configLocations = new String[0];
+    protected List<String> excludeConfigLocations = new ArrayList<String>();
+    protected Set<String> failedLocations = new HashSet<String>();
 
     private boolean strictErrorHandling = false;
     private String childContextPrototype = null;
 
-    private String[] fireOnly = null;
     public static final String TARGET_SOURCE_SUFFIX = "_targetSource";
     public static final String BEAN_DEF_SUFFIX = "_beanDef";
+    public static final String EXPORT_REF_SUFFIX = "-export-ref";
 
     /**
      * specifies whether initialization of this bean failed if one of the nested children contexts
@@ -70,16 +71,23 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         this.childContextPrototype = childContextPrototype;
     }
 
-    public void setFireOnly(String[] fireOnly) {
-        this.fireOnly = fireOnly;
+    public void setExcludeConfigLocations(String[] excludeConfigLocations) {
+        this.excludeConfigLocations = Arrays.asList(excludeConfigLocations);
     }
 
     /**
      * resolves configs paths and build nested children contexts
      */
     public void afterPropertiesSet() throws Exception {
+        resolveConfigLocations();
+        excludeConfigLocations();
+    }
+
+    private void initializeChildContexts() {
         for (String loc : configLocations) {
-            // attempt to resolve classpath*:
+            if (failedLocations.contains(loc)) {
+                continue;
+            }
             try {
                 Resource[] resources = context.getResources(loc);
 
@@ -90,35 +98,97 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
                     } catch (Exception e) {
                         log.error(String.format("Failed to process resource [%s] from location [%s] ", res.getURL(), loc), e);
                         if (strictErrorHandling) {
-                            throw e;
+                            throw new RuntimeException(e);
                         }
                         nestedContextsExceptions.put(loc, e);
+                        addToFailedLocations(loc);
+                        break;
                     }
                 }
             } catch (IOException e) {
                 log.error(String.format("Failed to process configuration from [%s]", loc), e);
                 if (strictErrorHandling) {
-                    throw e;
+                    throw new RuntimeException(e);
                 }
+                addToFailedLocations(loc);
             }
         }
+    }
+
+    protected void resolveConfigLocations() throws Exception {
+        List<String> configLocs = new ArrayList<String>();
+        PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
+
+        for (int i = 0; i < configLocations.length; i++) {
+            String location = (SystemPropertyUtils.resolvePlaceholders(configLocations[i])).trim();
+            try {
+                addConfigLocations(pmrpr, location, configLocs, false);
+            } catch (Exception e) {
+                addConfigLocations(pmrpr, "file:" + location, configLocs, true);
+            }
+        }
+
+        log.info("Locations were resolved to that sequence: " + configLocs.toString());
+        configLocations = configLocs.toArray(new String[0]);
+    }
+
+    private void addConfigLocations(PathMatchingResourcePatternResolver pmrpr, String location,
+                                    List<String> configLocs, boolean isFileConfLoc) throws Exception {
+        boolean isPattern = pmrpr.getPathMatcher().isPattern(location);
+        Resource[] resources = pmrpr.getResources(location);
+        for (Resource resource : resources) {
+            String locName = !isFileConfLoc ? resource.getURI().toString() : removeStandardPrefix(resource.getURI().toString());
+            if (!configLocs.contains(locName) && isPattern) {
+                configLocs.add(locName);
+            }
+            if (!isPattern) {
+                configLocs.remove(locName);
+                configLocs.add(locName);
+            }
+        }
+    }
+
+    private String removeStandardPrefix(String location) {
+        return location.replace("file:/", "").replace("file:", "");
+    }
+
+    private void excludeConfigLocations() throws Exception {
+        List<String> res = new ArrayList<String>(Arrays.asList(configLocations));
+        PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
+
+        for (String loc : excludeConfigLocations) {
+            String location = (SystemPropertyUtils.resolvePlaceholders(loc)).trim();
+
+            try {
+                removeConfigLocations(pmrpr, location, res, false);
+            } catch (Exception e) {
+                removeConfigLocations(pmrpr, "file:" + location, res, true);
+            }
+        }
+
+        configLocations = res.toArray(new String[0]);
+    }
+
+    private void removeConfigLocations(PathMatchingResourcePatternResolver pmrpr, String location,
+                                    List<String> configLocs, boolean isFileConfLoc) throws Exception {
+        Resource[] resources = pmrpr.getResources(location);
+        for (Resource resource : resources) {
+            String locName = !isFileConfLoc ? resource.getURI().toString() : removeStandardPrefix(resource.getURI().toString());
+            configLocs.remove(locName);
+        }
+    }
+
+    protected void addToFailedLocations(String loc) {
+    }
+
+    public Set<String> getFailedLocations() {
+        return failedLocations;
     }
 
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof ContextRefreshedEvent) {
             if (context.equals(((ContextRefreshedEvent) event).getApplicationContext())) {
-                ConfigurableBeanFactory factory = ((AbstractApplicationContext) context).getBeanFactory();
-                String[] singletonNames = factory.getSingletonNames();
-                for (String singletonName : singletonNames) {
-                    if (singletonName.contains(TARGET_SOURCE_SUFFIX)) {
-                        String name = singletonName.split(ContextParentBean.TARGET_SOURCE_SUFFIX)[0]
-                                + ContextParentBean.BEAN_DEF_SUFFIX;
-                        if (!context.containsBean(name)) {
-                            ((BeanDefinitionRegistry) factory).registerBeanDefinition(name,
-                                    BeanDefinitionBuilder.genericBeanDefinition(factory.getBean(singletonName, TargetSource.class).getTargetClass()).getBeanDefinition());
-                        }
-                    }
-                }
+                initializeChildContexts();
             }
         }
     }
@@ -145,27 +215,14 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     }
 
     /**
-     * delimiter separated list of Sspring-usual resources specifies. classpath*: classpath:, file:
+     * delimiter separated list of Spring-usual resources specifies. classpath*: classpath:, file:
      * start wildcards are supported.
      * delimiters are {@link ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS}
      */
-    public void setConfigLocation(String list) {
-        String[] locations = StringUtils.tokenizeToStringArray(list,
-                ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
-
+    public void setConfigLocations(String[] locations) throws Exception {
         Assert.noNullElements(locations, "Config locations must not be null");
-        configLocations = new String[locations.length];
-        for (int i = 0; i < locations.length; i++) {
-            this.configLocations[i] = (SystemPropertyUtils
-                    .resolvePlaceholders(locations[i])).trim();
-        }
-    }
 
-    /**
-     * accepts delimited list from {@link setConfigLocation}
-     */
-    public void setConfigLocations(String[] list) {
-        configLocations = list;
+        configLocations = locations;
     }
 
     /**
@@ -183,22 +240,16 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         String singletonBeanName = ref.getTarget() + TARGET_SOURCE_SUFFIX;
 
         if (!context.containsBean(singletonBeanName)) {
-            ExportLazyInitTargetSource exportLazyInitTargetSource = new ExportLazyInitTargetSource();
-            exportLazyInitTargetSource.setTargetBeanName(ref.getTarget());
-            exportLazyInitTargetSource.setBeanFactory(ref.getBeanFactory());
-            exportLazyInitTargetSource.setTargetClass(ref.getInterfaceClass());
-            exportLazyInitTargetSource.setExportClass(ref.getInterfaceClass());
+            ExportTargetSource exportTargetSource = new ExportTargetSource();
+            exportTargetSource.setTargetBeanName(ref.getTarget());
+            exportTargetSource.setTargetClass(ref.getInterfaceClass());
+            exportTargetSource.setBeanFactory(ref.getBeanFactory());
 
             ((AbstractApplicationContext) context).getBeanFactory()
-                    .registerSingleton(singletonBeanName, exportLazyInitTargetSource);
-        } else {
-            ExportLazyInitTargetSource exportLazyInitTargetSource = (ExportLazyInitTargetSource) context.getBean(singletonBeanName, TargetSource.class);
-            exportLazyInitTargetSource.setBeanFactory(ref.getBeanFactory());
-            exportLazyInitTargetSource.setExportClass(ref.getInterfaceClass());
+                    .registerSingleton(singletonBeanName, exportTargetSource);
         }
 
         return null;
-//        return registry.export(ref);
     }
 
     @SuppressWarnings("unchecked")
@@ -208,25 +259,14 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         }
 
         String beanDefinitionName = name + BEAN_DEF_SUFFIX;
-        String singletonBeanName = name + TARGET_SOURCE_SUFFIX;
 
-        if (context.containsBean(beanDefinitionName)) {
-            return context.getBean(beanDefinitionName, clazz);
-        } else {
-            ExportLazyInitTargetSource exportLazyInitTargetSource = new ExportLazyInitTargetSource();
-            exportLazyInitTargetSource.setTargetBeanName(name);
-            exportLazyInitTargetSource.setTargetClass(clazz);
-
-            ((AbstractApplicationContext) context).getBeanFactory()
-                    .registerSingleton(singletonBeanName, exportLazyInitTargetSource);
-
+        if (!context.containsBean(beanDefinitionName)) {
             ConfigurableBeanFactory factory = ((AbstractApplicationContext) context).getBeanFactory();
             ((BeanDefinitionRegistry) factory).registerBeanDefinition(beanDefinitionName,
                     BeanDefinitionBuilder.genericBeanDefinition(clazz).getBeanDefinition());
-
-            return context.getBean(beanDefinitionName, clazz);
         }
-//        return registry.lookup(name, clazz);
+
+        return context.getBean(beanDefinitionName, clazz);
     }
 
     public void destroy() throws Exception {

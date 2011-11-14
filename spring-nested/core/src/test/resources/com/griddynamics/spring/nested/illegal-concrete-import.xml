@@ -17,7 +17,7 @@
 
     <bean id="childContextPrototype" class="com.griddynamics.spring.nested.SingleResourceXmlChildContext" scope="prototype"/>
     <bean name="root" class="com.griddynamics.spring.nested.StrictContextParentBean">
-        <property name="configLocation" value=""/>
+        <property name="configLocations" value=""/>
         <property name="strictErrorHandling" value="true" />
         <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>
@@ -32,7 +32,6 @@
             </list>
         </property>
     </bean>
-
 
     <bean name="export-declaration" factory-bean="root" factory-method="export">
         <constructor-arg>

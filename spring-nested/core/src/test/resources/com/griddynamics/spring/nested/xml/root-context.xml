@@ -17,8 +17,8 @@
     <bean id="childContextPrototype" class="com.griddynamics.spring.nested.SingleResourceXmlChildContext" scope="prototype"/>
 
     <bean name="root" class="com.griddynamics.spring.nested.ContextParentBean">
-        <property name="configLocation" value="
-                /com/griddynamics/spring/nested/xml/first-export-context.xml
+        <property name="configLocations" value="
+                /com/griddynamics/spring/nested/xml/first-export-context.xml,
                 /com/griddynamics/spring/nested/xml/second-export-context.xml
         " />
         <property name="strictErrorHandling" value="true" />
@@ -26,8 +26,8 @@
     </bean>
 
     <bean id="proxyCreator" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-        <property name="customTargetSourceCreators" ref="nestedTargetSourceCreator"/>
+        <property name="customTargetSourceCreators" >
+            <bean class="com.griddynamics.spring.nested.NestedTargetSourceCreator"/>
+        </property>
     </bean>
-
-    <bean id="nestedTargetSourceCreator" class="com.griddynamics.spring.nested.NestedTargetSourceCreator"/>
 </beans>

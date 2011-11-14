@@ -22,7 +22,7 @@
     <bean id="childContextPrototype" class="com.griddynamics.spring.nested.web.SingleResourceWebChildContext" scope="prototype"/>
 
     <bean name="root" class="com.griddynamics.spring.nested.ContextParentBean">
-        <property name="configLocation" value="classpath:/com/griddynamics/spring/nested/controllers-test/child-context.xml" />
+        <property name="configLocations" value="classpath:/com/griddynamics/spring/nested/controllers-test/child-context.xml" />
         <property name="strictErrorHandling" value="true" />
         <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>

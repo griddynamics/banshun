@@ -14,9 +14,9 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean name="firstChild" class="com.griddynamics.spring.nested.xml.ChildImpl" lazy-init="true"/>
+    <bean name="firstChild" class="com.griddynamics.spring.nested.xml.ChildImpl"/>
 
-    <bean name="parent" class="com.griddynamics.spring.nested.xml.ParentImpl" lazy-init="true">
+    <bean name="parent" class="com.griddynamics.spring.nested.xml.ParentImpl">
         <property name="child" ref="secondChild" />
     </bean>
 </beans>
