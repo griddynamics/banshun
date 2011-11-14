@@ -10,6 +10,7 @@ import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.ResourceEntityResolver;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 
+import javax.swing.*;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -59,21 +60,17 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
     }
 
     @Override
-    protected void resolveConfigLocations() throws Exception {
-    }
-
-    @Override
     protected void addToFailedLocations(String loc) {
         transitiveClosure(loc, ignoredLocations, importsByExport);
     }
 
     @Override
-    protected void analyzeDependencies() throws Exception {
+    protected List<String> analyzeDependencies(List<String> configLocations) throws Exception {
         ContextAnalyzer analyzer = new ContextAnalyzer();
         List<Exception> exceptions = new LinkedList<Exception>();
 
         List<String> limitedLocations = new ArrayList<String>();
-        for (String loc : getConfigLocations()) {
+        for (String loc : configLocations) {
             BeanDefinitionRegistry beanFactory = getBeanFactory(loc);
 
             String[] beanNames = beanFactory.getBeanDefinitionNames();
@@ -82,7 +79,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
                 try {
                     if (isExport(beanDefinition)) {
                         analyzer.addExport(beanDefinition, loc);
-                        if (!runOnlyServices.isEmpty() && checkForRunOnly(beanName)) {
+                        if (checkForRunOnly(beanName)) {
                             limitedLocations.add(loc);
                         }
                     } else if (isImport(beanDefinition)) {
@@ -109,12 +106,14 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
             throw exceptions.get(0);
         }
 
-        DependencySorter sorter = new DependencySorter(getConfigLocations(), analyzer.getImports(), analyzer.getExports());
+        DependencySorter sorter = new DependencySorter(configLocations.toArray(new String[0]), analyzer.getImports(), analyzer.getExports());
         sorter.setProhibitCycles(prohibitCycles);
 
-        filterConfigLocations(limitedLocations, sorter.sort(), analyzer.getImports(), analyzer.getExports());
+        List<String> analyzedConfigLocations = filterConfigLocations(limitedLocations, sorter.sort(), analyzer.getImports(), analyzer.getExports());
 
-        log.info("Contexts were created in that order: " + Arrays.toString(getConfigLocations()));
+        log.info("Contexts were created in that order: " + analyzedConfigLocations);
+
+        return analyzedConfigLocations;
     }
 
     private void checkClassExist(String location, String beanName, String beanClassName) throws ClassNotFoundException {
@@ -167,10 +166,10 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
     }
 
     private boolean checkForRunOnly(String beanName) {
-        return runOnlyServices.contains(beanName);
+        return !runOnlyServices.isEmpty() && runOnlyServices.contains(beanName);
     }
 
-    private void filterConfigLocations(List<String> limitedLocations, String[] allLocations,
+    private List<String> filterConfigLocations(List<String> limitedLocations, String[] allLocations,
             Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
         Map<String, HashSet<String>> exportsByImport = new HashMap<String, HashSet<String>>();
         importsByExport = new HashMap<String, HashSet<String>>();
@@ -190,16 +189,15 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
         }
 
         Set<String> marked = new HashSet<String>();
+        List<String> resultLocationList = new ArrayList<String>(Arrays.asList(allLocations));
+
         if (!limitedLocations.isEmpty()) {
             for (String loc : limitedLocations) {
                 transitiveClosure(loc, marked, exportsByImport);
             }
-
-            List<String> resultLocationList = new ArrayList<String>(Arrays.asList(allLocations));
             resultLocationList.retainAll(marked);
-
-            this.configLocations = resultLocationList.toArray(new String[0]);
         }
+        return resultLocationList;
     }
 
     private void transitiveClosure(String loc, Set<String> marked, Map<String, HashSet<String>> locationDependencies) {

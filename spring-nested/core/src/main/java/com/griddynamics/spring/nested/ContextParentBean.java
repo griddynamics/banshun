@@ -46,6 +46,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     private List<ConfigurableApplicationContext> children = new ArrayList<ConfigurableApplicationContext>();
 
     protected String[] configLocations = new String[0];
+    protected List<String> resultConfigLocations;
     protected List<String> excludeConfigLocations = new ArrayList<String>();
     protected Set<String> ignoredLocations = new HashSet<String>();
 
@@ -74,20 +75,27 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         this.excludeConfigLocations = Arrays.asList(excludeConfigLocations);
     }
 
+    public List<String> getResultConfigLocations() {
+        return resultConfigLocations;
+    }
+
     /**
      * resolves configs paths and build nested children contexts
      */
+    @Override
     public void afterPropertiesSet() throws Exception {
-        resolveConfigLocations();
-        excludeConfigLocations();
-        analyzeDependencies();
+        List<String> configLocations = new ArrayList<String>();
+        List<String> resolvedConfigLocations = resolveConfigLocations(configLocations);
+        List<String> narrowedConfigLocations = excludeConfigLocations(resolvedConfigLocations);
+        this.resultConfigLocations = analyzeDependencies(narrowedConfigLocations);
     }
 
-    protected void analyzeDependencies() throws Exception {
+    protected List<String> analyzeDependencies(List<String> configLocations) throws Exception {
+        return configLocations;
     }
 
     private void initializeChildContexts() {
-        for (String loc : configLocations) {
+        for (String loc : resultConfigLocations) {
             if (ignoredLocations.contains(loc)) {
                 continue;
             }
@@ -118,21 +126,21 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         }
     }
 
-    protected void resolveConfigLocations() throws Exception {
-        List<String> configLocs = new ArrayList<String>();
+    protected List<String> resolveConfigLocations(List<String> configLocations) throws Exception {
         PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
 
-        for (int i = 0; i < configLocations.length; i++) {
-            String location = (SystemPropertyUtils.resolvePlaceholders(configLocations[i])).trim();
+        for (String loc : this.configLocations) {
+            String location = (SystemPropertyUtils.resolvePlaceholders(loc)).trim();
             try {
-                addConfigLocations(pmrpr, location, configLocs, false);
+                addConfigLocations(pmrpr, location, configLocations, false);
             } catch (Exception e) {
-                addConfigLocations(pmrpr, "file:" + location, configLocs, true);
+                addConfigLocations(pmrpr, "file:" + location, configLocations, true);
             }
         }
 
-        log.info("Locations were resolved to that sequence: " + configLocs.toString());
-        configLocations = configLocs.toArray(new String[0]);
+        log.info("Locations were resolved to that sequence: " + configLocations);
+
+        return configLocations;
     }
 
     private void addConfigLocations(PathMatchingResourcePatternResolver pmrpr, String location,
@@ -155,21 +163,20 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         return location.replace("file:/", "").replace("file:", "");
     }
 
-    protected void excludeConfigLocations() throws Exception {
-        List<String> res = new ArrayList<String>(Arrays.asList(configLocations));
+    protected List<String> excludeConfigLocations(List<String> configLocations) throws Exception {
         PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
 
         for (String loc : excludeConfigLocations) {
             String location = (SystemPropertyUtils.resolvePlaceholders(loc)).trim();
 
             try {
-                removeConfigLocations(pmrpr, location, res, false);
+                removeConfigLocations(pmrpr, location, configLocations, false);
             } catch (Exception e) {
-                removeConfigLocations(pmrpr, "file:" + location, res, true);
+                removeConfigLocations(pmrpr, "file:" + location, configLocations, true);
             }
         }
 
-        configLocations = res.toArray(new String[0]);
+        return configLocations;
     }
 
     private void removeConfigLocations(PathMatchingResourcePatternResolver pmrpr, String location,

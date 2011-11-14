@@ -74,7 +74,7 @@ public class LookupTargetSource implements TargetSource {
                     return localTarget;
                 } else {
                     // log potentially redundant instance initialization
-                    log.warn("Bean " + actualBeanName + "were created earlier");
+                    log.warn("Bean " + actualBeanName + "was created earlier");
                     return target.get();
                 }
             } else {

@@ -31,8 +31,8 @@ public class DynamicProfilesTest {
         registry.setRunOnlyServices(new String[] {"object1"});
         registry.afterPropertiesSet();
 
-        assertEquals(1, registry.getConfigLocations().length);
-        assertTrue(registry.getConfigLocations()[0].contains("ctx1.xml"));
+        assertEquals(1, registry.getResultConfigLocations().size());
+        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
     }
 
     @Test
@@ -42,11 +42,11 @@ public class DynamicProfilesTest {
         registry.setRunOnlyServices(new String[] {"context3", "context7"});
         registry.afterPropertiesSet();
 
-        assertEquals(4, registry.getConfigLocations().length);
-        assertTrue(registry.getConfigLocations()[0].contains("ctx1.xml"));
-        assertTrue(registry.getConfigLocations()[1].contains("ctx2.xml"));
-        assertTrue(registry.getConfigLocations()[2].contains("ctx7.xml"));
-        assertTrue(registry.getConfigLocations()[3].contains("ctx3.xml"));
+        assertEquals(4, registry.getResultConfigLocations().size());
+        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
+        assertTrue(registry.getResultConfigLocations().get(1).contains("ctx2.xml"));
+        assertTrue(registry.getResultConfigLocations().get(2).contains("ctx7.xml"));
+        assertTrue(registry.getResultConfigLocations().get(3).contains("ctx3.xml"));
     }
 
     @Test
@@ -56,11 +56,11 @@ public class DynamicProfilesTest {
         registry.setRunOnlyServices(new String[]{"context6"});
         registry.afterPropertiesSet();
 
-        assertEquals(4, registry.getConfigLocations().length);
-        assertTrue(registry.getConfigLocations()[0].contains("ctx1.xml"));
-        assertTrue(registry.getConfigLocations()[1].contains("ctx2.xml"));
-        assertTrue(registry.getConfigLocations()[2].contains("ctx7.xml"));
-        assertTrue(registry.getConfigLocations()[3].contains("ctx6.xml"));
+        assertEquals(4, registry.getResultConfigLocations().size());
+        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
+        assertTrue(registry.getResultConfigLocations().get(1).contains("ctx2.xml"));
+        assertTrue(registry.getResultConfigLocations().get(2).contains("ctx7.xml"));
+        assertTrue(registry.getResultConfigLocations().get(3).contains("ctx6.xml"));
     }
 
     @Test
@@ -70,13 +70,13 @@ public class DynamicProfilesTest {
         registry.setRunOnlyServices(new String[] {"context5"});
         registry.afterPropertiesSet();
 
-        assertEquals(7, registry.getConfigLocations().length);
-        assertTrue(registry.getConfigLocations()[0].contains("ctx1.xml"));
-        assertTrue(registry.getConfigLocations()[1].contains("ctx2.xml"));
-        assertTrue(registry.getConfigLocations()[2].contains("ctx7.xml"));
-        assertTrue(registry.getConfigLocations()[3].contains("ctx3.xml"));
-        assertTrue(registry.getConfigLocations()[4].contains("ctx4.xml"));
-        assertTrue(registry.getConfigLocations()[5].contains("ctx6.xml"));
-        assertTrue(registry.getConfigLocations()[6].contains("ctx5.xml"));
+        assertEquals(7, registry.getResultConfigLocations().size());
+        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
+        assertTrue(registry.getResultConfigLocations().get(1).contains("ctx2.xml"));
+        assertTrue(registry.getResultConfigLocations().get(2).contains("ctx7.xml"));
+        assertTrue(registry.getResultConfigLocations().get(3).contains("ctx3.xml"));
+        assertTrue(registry.getResultConfigLocations().get(4).contains("ctx4.xml"));
+        assertTrue(registry.getResultConfigLocations().get(5).contains("ctx6.xml"));
+        assertTrue(registry.getResultConfigLocations().get(6).contains("ctx5.xml"));
     }
 }

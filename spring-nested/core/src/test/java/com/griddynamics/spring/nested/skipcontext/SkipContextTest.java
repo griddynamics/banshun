@@ -31,15 +31,15 @@ public class SkipContextTest {
         context = new ClassPathXmlApplicationContext("com/griddynamics/spring/nested/skipcontext/root-ctx.xml");
         StrictContextParentBean registry = (StrictContextParentBean) context.getBean("root");
 
-        Set<String> failedLocations = registry.getIgnoredLocations();
-        assertEquals(5, failedLocations.size());
+        Set<String> ignoredLocations = registry.getIgnoredLocations();
+        assertEquals(5, ignoredLocations.size());
         assertEquals(2, registry.getChildren().size());
 
-        assertTrue(containsCtx(failedLocations, "ctx2.xml"));
-        assertTrue(containsCtx(failedLocations, "ctx3.xml"));
-        assertTrue(containsCtx(failedLocations, "ctx4.xml"));
-        assertTrue(containsCtx(failedLocations, "ctx5.xml"));
-        assertTrue(containsCtx(failedLocations, "ctx6.xml"));
+        assertTrue(containsCtx(ignoredLocations, "ctx2.xml"));
+        assertTrue(containsCtx(ignoredLocations, "ctx3.xml"));
+        assertTrue(containsCtx(ignoredLocations, "ctx4.xml"));
+        assertTrue(containsCtx(ignoredLocations, "ctx5.xml"));
+        assertTrue(containsCtx(ignoredLocations, "ctx6.xml"));
     }
 
     private boolean containsCtx(Set<String> set, String query) {

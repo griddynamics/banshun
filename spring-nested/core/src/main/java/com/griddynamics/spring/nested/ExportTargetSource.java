@@ -65,7 +65,7 @@ public class ExportTargetSource implements TargetSource {
                 return localTarget;
             } else {
                 // log potentially redundant instance initialization
-                log.warn("Bean " + targetBeanName + "were created earlier");
+                log.warn("Bean " + targetBeanName + "was created earlier");
                 return target.get();
             }
         }
