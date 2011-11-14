@@ -126,15 +126,33 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         }
     }
 
+    private List<String> collectConfigLocations(String location) throws IOException {
+        List<String> result = new ArrayList<String>();
+        Resource[] resources = context.getResources(location);
+        for (Resource resource : resources) {
+            result.add(resource.getURI().toString());
+        }
+        return result;
+    }
+
+    private String resolveLocationName(String location) {
+        return (SystemPropertyUtils.resolvePlaceholders(location)).trim();
+    }
+
     protected List<String> resolveConfigLocations(List<String> configLocations) throws Exception {
         PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
-
         for (String loc : this.configLocations) {
-            String location = (SystemPropertyUtils.resolvePlaceholders(loc)).trim();
-            try {
-                addConfigLocations(pmrpr, location, configLocations, false);
-            } catch (Exception e) {
-                addConfigLocations(pmrpr, "file:" + location, configLocations, true);
+            String location = resolveLocationName(loc);
+            boolean isPattern = pmrpr.getPathMatcher().isPattern(location);
+            List<String> collectedLocations = collectConfigLocations(location);
+            for (String locName : collectedLocations) {
+                if (!configLocations.contains(locName) && isPattern) {
+                    configLocations.add(locName);
+                }
+                if (!isPattern) {
+                    configLocations.remove(locName);
+                    configLocations.add(locName);
+                }
             }
         }
 
@@ -143,49 +161,12 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         return configLocations;
     }
 
-    private void addConfigLocations(PathMatchingResourcePatternResolver pmrpr, String location,
-                                    List<String> configLocs, boolean isFileConfLoc) throws Exception {
-        boolean isPattern = pmrpr.getPathMatcher().isPattern(location);
-        Resource[] resources = pmrpr.getResources(location);
-        for (Resource resource : resources) {
-            String locName = !isFileConfLoc ? resource.getURI().toString() : removeStandardPrefix(resource.getURI().toString());
-            if (!configLocs.contains(locName) && isPattern) {
-                configLocs.add(locName);
-            }
-            if (!isPattern) {
-                configLocs.remove(locName);
-                configLocs.add(locName);
-            }
-        }
-    }
-
-    private String removeStandardPrefix(String location) {
-        return location.replace("file:/", "").replace("file:", "");
-    }
-
     protected List<String> excludeConfigLocations(List<String> configLocations) throws Exception {
-        PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
-
         for (String loc : excludeConfigLocations) {
-            String location = (SystemPropertyUtils.resolvePlaceholders(loc)).trim();
-
-            try {
-                removeConfigLocations(pmrpr, location, configLocations, false);
-            } catch (Exception e) {
-                removeConfigLocations(pmrpr, "file:" + location, configLocations, true);
-            }
+            String location = resolveLocationName(loc);
+            configLocations.removeAll(collectConfigLocations(location));
         }
-
         return configLocations;
-    }
-
-    private void removeConfigLocations(PathMatchingResourcePatternResolver pmrpr, String location,
-                                    List<String> configLocs, boolean isFileConfLoc) throws Exception {
-        Resource[] resources = pmrpr.getResources(location);
-        for (Resource resource : resources) {
-            String locName = !isFileConfLoc ? resource.getURI().toString() : removeStandardPrefix(resource.getURI().toString());
-            configLocs.remove(locName);
-        }
     }
 
     protected void addToFailedLocations(String loc) {
