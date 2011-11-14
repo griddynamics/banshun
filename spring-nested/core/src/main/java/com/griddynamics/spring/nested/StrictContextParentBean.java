@@ -10,7 +10,6 @@ import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.ResourceEntityResolver;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 
-import javax.swing.*;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -35,7 +34,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
 
     private String name;
     private List<String> runOnlyServices = new ArrayList<String>();
-    private Map<String, HashSet<String>> importsByExport;
+    private LocationsGraph locationsGraph;
 
     private boolean prohibitCycles = true;
 
@@ -61,7 +60,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
 
     @Override
     protected void addToFailedLocations(String loc) {
-        transitiveClosure(loc, ignoredLocations, importsByExport);
+        locationsGraph.transitiveClosure(loc, ignoredLocations, false);
     }
 
     @Override
@@ -109,7 +108,8 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
         DependencySorter sorter = new DependencySorter(configLocations.toArray(new String[0]), analyzer.getImports(), analyzer.getExports());
         sorter.setProhibitCycles(prohibitCycles);
 
-        List<String> analyzedConfigLocations = filterConfigLocations(limitedLocations, sorter.sort(), analyzer.getImports(), analyzer.getExports());
+        locationsGraph = new LocationsGraph(analyzer.getImports(), analyzer.getExports());
+        List<String> analyzedConfigLocations = locationsGraph.filterConfigLocations(limitedLocations, sorter.sort());
 
         log.info("Contexts were created in that order: " + analyzedConfigLocations);
 
@@ -167,47 +167,5 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
 
     private boolean checkForRunOnly(String beanName) {
         return !runOnlyServices.isEmpty() && runOnlyServices.contains(beanName);
-    }
-
-    private List<String> filterConfigLocations(List<String> limitedLocations, String[] allLocations,
-            Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
-        Map<String, HashSet<String>> exportsByImport = new HashMap<String, HashSet<String>>();
-        importsByExport = new HashMap<String, HashSet<String>>();
-
-        for (String beanName : imports.keySet()) {
-            String expLoc = exports.get(beanName).getLocation();
-            if (!importsByExport.containsKey(expLoc)) {
-                importsByExport.put(expLoc, new HashSet<String>());
-            }
-            for (BeanReferenceInfo refInfo : imports.get(beanName)) {
-                if (!exportsByImport.containsKey(refInfo.getLocation())) {
-                    exportsByImport.put(refInfo.getLocation(), new HashSet<String>());
-                }
-                exportsByImport.get(refInfo.getLocation()).add(expLoc);
-                importsByExport.get(expLoc).add(refInfo.getLocation());
-            }
-        }
-
-        Set<String> marked = new HashSet<String>();
-        List<String> resultLocationList = new ArrayList<String>(Arrays.asList(allLocations));
-
-        if (!limitedLocations.isEmpty()) {
-            for (String loc : limitedLocations) {
-                transitiveClosure(loc, marked, exportsByImport);
-            }
-            resultLocationList.retainAll(marked);
-        }
-        return resultLocationList;
-    }
-
-    private void transitiveClosure(String loc, Set<String> marked, Map<String, HashSet<String>> locationDependencies) {
-        marked.add(loc);
-        if (locationDependencies.containsKey(loc)) {
-            for (String dependsOn : locationDependencies.get(loc)) {
-                if (!marked.contains(dependsOn)) {
-                    transitiveClosure(dependsOn, marked, locationDependencies);
-                }
-            }
-        }
     }
 }
