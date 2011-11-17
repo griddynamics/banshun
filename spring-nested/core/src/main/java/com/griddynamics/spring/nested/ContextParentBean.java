@@ -48,8 +48,6 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     protected String[] configLocations = new String[0];
     protected List<String> resultConfigLocations;
     protected List<String> excludeConfigLocations = new ArrayList<String>();
-
-    protected List<String> notToExcludeConfigLocations = new ArrayList<String>();
     protected Set<String> ignoredLocations = new HashSet<String>();
 
     private boolean strictErrorHandling = false;
@@ -75,11 +73,6 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
 
     public void setExcludeConfigLocations(String[] excludeConfigLocations) {
         this.excludeConfigLocations = Arrays.asList(excludeConfigLocations);
-    }
-
-
-    public void setNotToExcludeConfigLocations(String[] notToExcludeConfigLocations) {
-        this.notToExcludeConfigLocations = Arrays.asList(notToExcludeConfigLocations);
     }
 
     public List<String> getResultConfigLocations() {
@@ -142,15 +135,6 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         return result;
     }
 
-    private List<String> collectConfigLocations(List<String> locations) throws IOException {
-        List<String> result = new ArrayList<String>();
-        for (String loc : locations) {
-            String location = resolveLocationName(loc);
-            result.addAll(collectConfigLocations(location));
-        }
-        return result;
-    }
-
     private String resolveLocationName(String location) {
         return (SystemPropertyUtils.resolvePlaceholders(location)).trim();
     }
@@ -178,12 +162,10 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     }
 
     protected List<String> excludeConfigLocations(List<String> configLocations) throws Exception {
-        List<String> locationsNotToExclude = collectConfigLocations(notToExcludeConfigLocations);
-        List<String> locationsToExclude = collectConfigLocations(excludeConfigLocations);
-
-        locationsToExclude.removeAll(locationsNotToExclude);
-        configLocations.removeAll(locationsToExclude);
-
+        for (String loc : excludeConfigLocations) {
+            String location = resolveLocationName(loc);
+            configLocations.removeAll(collectConfigLocations(location));
+        }
         return configLocations;
     }
 
