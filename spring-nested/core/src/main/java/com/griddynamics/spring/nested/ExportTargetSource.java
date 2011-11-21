@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @Description:
  */
 public class ExportTargetSource implements TargetSource {
-    private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
+    private static final Logger log = LoggerFactory.getLogger(ExportTargetSource.class);
 
     private final AtomicReference<Object> target = new AtomicReference<Object>();
     private final String targetBeanName;
@@ -65,7 +65,7 @@ public class ExportTargetSource implements TargetSource {
                 return localTarget;
             } else {
                 // log potentially redundant instance initialization
-                log.warn("Bean " + targetBeanName + "was created earlier");
+                log.info("needles creation of bean " + targetBeanName + "caused by concurrency has been detected. ignoring new instance");
                 return target.get();
             }
         }

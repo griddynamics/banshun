@@ -15,21 +15,21 @@ import java.util.*;
  * @Description:
  */
 public class LocationsGraph {
-    private Map<String, HashSet<String>> locationsDependOn = new HashMap<String, HashSet<String>>();
-    private Map<String, HashSet<String>> locationsDependenciesOf = new HashMap<String, HashSet<String>>();
+    private Map<String, HashSet<String>> dependOn = new HashMap<String, HashSet<String>>();
+    private Map<String, HashSet<String>> dependenciesOf = new HashMap<String, HashSet<String>>();
 
     public LocationsGraph(Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
         for (String beanName : imports.keySet()) {
             String expLoc = exports.get(beanName).getLocation();
-            if (!locationsDependenciesOf.containsKey(expLoc)) {
-                locationsDependenciesOf.put(expLoc, new HashSet<String>());
+            if (!dependenciesOf.containsKey(expLoc)) {
+                dependenciesOf.put(expLoc, new HashSet<String>());
             }
             for (BeanReferenceInfo refInfo : imports.get(beanName)) {
-                if (!locationsDependOn.containsKey(refInfo.getLocation())) {
-                    locationsDependOn.put(refInfo.getLocation(), new HashSet<String>());
+                if (!dependOn.containsKey(refInfo.getLocation())) {
+                    dependOn.put(refInfo.getLocation(), new HashSet<String>());
                 }
-                locationsDependOn.get(refInfo.getLocation()).add(expLoc);
-                locationsDependenciesOf.get(expLoc).add(refInfo.getLocation());
+                dependOn.get(refInfo.getLocation()).add(expLoc);
+                dependenciesOf.get(expLoc).add(refInfo.getLocation());
             }
         }
     }
@@ -49,7 +49,7 @@ public class LocationsGraph {
 
     public void transitiveClosure(String loc, Set<String> marked, boolean isDependsOnMode) {
         marked.add(loc);
-        Map<String, HashSet<String>> locationDependencies = isDependsOnMode ? locationsDependOn : locationsDependenciesOf;
+        Map<String, HashSet<String>> locationDependencies = isDependsOnMode ? dependOn : dependenciesOf;
         if (locationDependencies.containsKey(loc)) {
             for (String dependsOn : locationDependencies.get(loc)) {
                 if (!marked.contains(dependsOn)) {

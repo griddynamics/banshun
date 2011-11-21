@@ -135,35 +135,31 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         return result;
     }
 
-    private String resolveLocationName(String location) {
-        return (SystemPropertyUtils.resolvePlaceholders(location)).trim();
-    }
-
     protected List<String> resolveConfigLocations(List<String> configLocations) throws Exception {
         PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
         for (String loc : this.configLocations) {
-            String location = resolveLocationName(loc);
-            boolean isPattern = pmrpr.getPathMatcher().isPattern(location);
+            String location = loc;
+            boolean wildcard = pmrpr.getPathMatcher().isPattern(location);
             List<String> collectedLocations = collectConfigLocations(location);
             for (String locName : collectedLocations) {
-                if (!configLocations.contains(locName) && isPattern) {
+                if (!configLocations.contains(locName) && wildcard) {
                     configLocations.add(locName);
                 }
-                if (!isPattern) {
+                if (!wildcard) {
                     configLocations.remove(locName);
                     configLocations.add(locName);
                 }
             }
         }
 
-        log.info("Locations were resolved to that sequence: " + configLocations);
+        log.info("resolved locations: " + configLocations);
 
         return configLocations;
     }
 
     protected List<String> excludeConfigLocations(List<String> configLocations) throws Exception {
         for (String loc : excludeConfigLocations) {
-            String location = resolveLocationName(loc);
+            String location = loc;
             configLocations.removeAll(collectConfigLocations(location));
         }
         return configLocations;

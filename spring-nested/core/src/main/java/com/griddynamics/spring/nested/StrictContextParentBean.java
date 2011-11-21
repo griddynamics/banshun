@@ -111,7 +111,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
         locationsGraph = new LocationsGraph(analyzer.getImports(), analyzer.getExports());
         List<String> analyzedConfigLocations = locationsGraph.filterConfigLocations(limitedLocations, sorter.sort());
 
-        log.info("Contexts were created in that order: " + analyzedConfigLocations);
+        log.info("ordered list of the contexts: " + analyzedConfigLocations);
 
         return analyzedConfigLocations;
     }

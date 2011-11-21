@@ -30,7 +30,7 @@ public class LookupTargetSourceCreator implements TargetSourceCreator, Applicati
             return null;
         }
 
-        Pattern pattern = Pattern.compile("(.*)" + ContextParentBean.BEAN_DEF_SUFFIX);
+        final Pattern pattern = Pattern.compile("(.*)" + ContextParentBean.BEAN_DEF_SUFFIX);
         Matcher matcher = pattern.matcher(beanName);
         matcher.matches();
 

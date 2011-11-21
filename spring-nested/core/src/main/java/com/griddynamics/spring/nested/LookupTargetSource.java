@@ -28,7 +28,6 @@ public class LookupTargetSource implements TargetSource {
 
     private AtomicReference<Object> target = new AtomicReference<Object>();
     private final ApplicationContext context;
-    private ExportTargetSource ets = null;
 
     private final String targetBeanName;
     private String actualBeanName;
@@ -39,7 +38,7 @@ public class LookupTargetSource implements TargetSource {
         this.targetBeanName = targetBeanName;
         this.targetClass = targetClass;
 
-        Pattern pattern = Pattern.compile("(.*)" + ContextParentBean.TARGET_SOURCE_SUFFIX);
+        final Pattern pattern = Pattern.compile("(.*)" + ContextParentBean.TARGET_SOURCE_SUFFIX);
         Matcher matcher = pattern.matcher(targetBeanName);
         matcher.matches();
         this.actualBeanName = matcher.group(1);
@@ -68,8 +67,8 @@ public class LookupTargetSource implements TargetSource {
         Object localTarget = target.get();
         if (localTarget == null) {
             if (context.containsBean(getTargetBeanName())) {
-                ets = (ExportTargetSource) context.getBean(getTargetBeanName(), TargetSource.class);
-                checkForCorrectAssignment(ets.getTargetClass(), actualBeanName);
+                ExportTargetSource ets = (ExportTargetSource) context.getBean(getTargetBeanName(), TargetSource.class);
+                checkForCorrectAssignment(ets.getTargetClass(), actualBeanName, ets.getBeanFactory().getType(actualBeanName));
                 if (target.compareAndSet(null, localTarget = ets.getTarget())) {
                     return localTarget;
                 } else {
@@ -85,12 +84,11 @@ public class LookupTargetSource implements TargetSource {
         return localTarget;
     }
 
-    private void checkForCorrectAssignment(Class exportClass, String actualBeanName) {
+    private void checkForCorrectAssignment(Class exportClass, String actualBeanName, Class actualBeanClass) {
         if (!getTargetClass().isAssignableFrom(exportClass)) {
             throw new BeanNotOfRequiredTypeException(actualBeanName, getTargetClass(), exportClass);
         }
 
-        Class actualBeanClass = ets.getBeanFactory().getType(actualBeanName);
         if (!exportClass.isAssignableFrom(actualBeanClass)) {
             throw new BeanCreationException(actualBeanName, new BeanNotOfRequiredTypeException(actualBeanName, actualBeanClass, exportClass));
         }
