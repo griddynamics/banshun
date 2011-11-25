@@ -42,8 +42,8 @@ public class WildcardsTest {
         );
         registry.afterPropertiesSet();
 
-        assertEquals(1, registry.getConfigLocations().length);
-        assertTrue(registry.getConfigLocations()[0].contains("ctx7.xml"));
+        assertEquals(1, registry.getResultConfigLocations().size());
+        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx7.xml"));
     }
 
     @Test
@@ -58,15 +58,15 @@ public class WildcardsTest {
         );
         registry.afterPropertiesSet();
 
-        assertEquals(8, registry.getConfigLocations().length);
-        assertTrue(registry.getConfigLocations()[0].contains("ctx1.xml"));
-        assertTrue(registry.getConfigLocations()[1].contains("ctx4.xml"));
-        assertTrue(registry.getConfigLocations()[2].contains("ctx2.xml"));
-        assertTrue(registry.getConfigLocations()[3].contains("ctx3.xml"));
-        assertTrue(registry.getConfigLocations()[4].contains("ctx5.xml"));
-        assertTrue(registry.getConfigLocations()[5].contains("ctx6.xml"));
-        assertTrue(registry.getConfigLocations()[6].contains("ctx8.xml"));
-        assertTrue(registry.getConfigLocations()[7].contains("ctx7.xml"));
+        assertEquals(8, registry.getResultConfigLocations().size());
+        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
+        assertTrue(registry.getResultConfigLocations().get(1).contains("ctx4.xml"));
+        assertTrue(registry.getResultConfigLocations().get(2).contains("ctx2.xml"));
+        assertTrue(registry.getResultConfigLocations().get(3).contains("ctx3.xml"));
+        assertTrue(registry.getResultConfigLocations().get(4).contains("ctx5.xml"));
+        assertTrue(registry.getResultConfigLocations().get(5).contains("ctx6.xml"));
+        assertTrue(registry.getResultConfigLocations().get(6).contains("ctx8.xml"));
+        assertTrue(registry.getResultConfigLocations().get(7).contains("ctx7.xml"));
     }
 
     @Test
@@ -80,8 +80,8 @@ public class WildcardsTest {
         );
         registry.afterPropertiesSet();
 
-        assertEquals(1, registry.getConfigLocations().length);
-        assertTrue(registry.getConfigLocations()[0].contains("ctx1.xml"));
+        assertEquals(1, registry.getResultConfigLocations().size());
+        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
     }
 
     @Test
@@ -95,12 +95,12 @@ public class WildcardsTest {
         );
         registry.afterPropertiesSet();
 
-        assertEquals(6, registry.getConfigLocations().length);
-        assertTrue(registry.getConfigLocations()[0].contains("ctx1.xml"));
-        assertTrue(registry.getConfigLocations()[1].contains("ctx3.xml"));
-        assertTrue(registry.getConfigLocations()[2].contains("ctx5.xml"));
-        assertTrue(registry.getConfigLocations()[3].contains("ctx4.xml"));
-        assertTrue(registry.getConfigLocations()[4].contains("ctx2.xml"));
-        assertTrue(registry.getConfigLocations()[5].contains("ctx6.xml"));
+        assertEquals(6, registry.getResultConfigLocations().size());
+        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
+        assertTrue(registry.getResultConfigLocations().get(1).contains("ctx3.xml"));
+        assertTrue(registry.getResultConfigLocations().get(2).contains("ctx5.xml"));
+        assertTrue(registry.getResultConfigLocations().get(3).contains("ctx4.xml"));
+        assertTrue(registry.getResultConfigLocations().get(4).contains("ctx2.xml"));
+        assertTrue(registry.getResultConfigLocations().get(5).contains("ctx6.xml"));
     }
 }

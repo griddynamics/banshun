@@ -34,7 +34,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
 
     private String name;
     private List<String> runOnlyServices = new ArrayList<String>();
-    private Map<String, HashSet<String>> locationOppositeDependencies;
+    private LocationsGraph locationsGraph;
 
     private boolean prohibitCycles = true;
 
@@ -59,26 +59,17 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        super.resolveConfigLocations();
-        analyzeDependencies();
-        super.afterPropertiesSet();
-    }
-
-    protected void resolveConfigLocations() throws Exception {
-    }
-
     protected void addToFailedLocations(String loc) {
-        failedLocations = new HashSet<String>();
-        markDependencies(loc, failedLocations, locationOppositeDependencies);
+        locationsGraph.transitiveClosure(loc, ignoredLocations, false);
     }
 
-    private void analyzeDependencies() throws Exception {
+    @Override
+    protected List<String> analyzeDependencies(List<String> configLocations) throws Exception {
         ContextAnalyzer analyzer = new ContextAnalyzer();
         List<Exception> exceptions = new LinkedList<Exception>();
 
         List<String> limitedLocations = new ArrayList<String>();
-        for (String loc : getConfigLocations()) {
+        for (String loc : configLocations) {
             BeanDefinitionRegistry beanFactory = getBeanFactory(loc);
 
             String[] beanNames = beanFactory.getBeanDefinitionNames();
@@ -87,7 +78,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
                 try {
                     if (isExport(beanDefinition)) {
                         analyzer.addExport(beanDefinition, loc);
-                        if (!runOnlyServices.isEmpty() && checkForRunOnly(beanName)) {
+                        if (checkForRunOnly(beanName)) {
                             limitedLocations.add(loc);
                         }
                     } else if (isImport(beanDefinition)) {
@@ -114,12 +105,15 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
             throw exceptions.get(0);
         }
 
-        DependencySorter sorter = new DependencySorter(getConfigLocations(), analyzer.getImports(), analyzer.getExports());
+        DependencySorter sorter = new DependencySorter(configLocations.toArray(new String[0]), analyzer.getImports(), analyzer.getExports());
         sorter.setProhibitCycles(prohibitCycles);
 
-        filterConfigLocations(limitedLocations, sorter.sort(), analyzer.getImports(), analyzer.getExports());
+        locationsGraph = new LocationsGraph(analyzer.getImports(), analyzer.getExports());
+        List<String> analyzedConfigLocations = locationsGraph.filterConfigLocations(limitedLocations, sorter.sort());
 
-        log.info("Contexts were created in that order: " + Arrays.toString(getConfigLocations()));
+        log.info("ordered list of the contexts: " + analyzedConfigLocations);
+
+        return analyzedConfigLocations;
     }
 
     private void checkClassExist(String location, String beanName, String beanClassName) throws ClassNotFoundException {
@@ -172,52 +166,6 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
     }
 
     private boolean checkForRunOnly(String beanName) {
-        return runOnlyServices.contains(beanName);
-    }
-
-    private void filterConfigLocations(List<String> limitedLocations, String[] allLocations,
-            Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
-        Map<String, HashSet<String>> locationDependencies = new HashMap<String, HashSet<String>>();
-        locationOppositeDependencies = new HashMap<String, HashSet<String>>();
-
-        for (String beanName : imports.keySet()) {
-            String expLoc = exports.get(beanName).getLocation();
-            if (!locationOppositeDependencies.containsKey(expLoc)) {
-                locationOppositeDependencies.put(expLoc, new HashSet<String>());
-            }
-            for (BeanReferenceInfo refInfo : imports.get(beanName)) {
-                if (!locationDependencies.containsKey(refInfo.getLocation())) {
-                    locationDependencies.put(refInfo.getLocation(), new HashSet<String>());
-                }
-                locationDependencies.get(refInfo.getLocation()).add(expLoc);
-                locationOppositeDependencies.get(expLoc).add(refInfo.getLocation());
-            }
-        }
-
-        Set<String> marked = new HashSet<String>();
-        if (!limitedLocations.isEmpty()) {
-            for (String loc : limitedLocations) {
-                markDependencies(loc, marked, locationDependencies);
-            }
-
-            List<String> resultLocationList = new ArrayList<String>();
-            for (String location : allLocations) {
-                if (marked.contains(location)) {
-                    resultLocationList.add(location);
-                }
-            }
-            this.configLocations = resultLocationList.toArray(new String[0]);
-        }
-    }
-
-    private void markDependencies(String loc, Set<String> marked, Map<String, HashSet<String>> locationDependencies) {
-        marked.add(loc);
-        if (locationDependencies.containsKey(loc)) {
-            for (String dependsOn : locationDependencies.get(loc)) {
-                if (!marked.contains(dependsOn)) {
-                    markDependencies(dependsOn, marked, locationDependencies);
-                }
-            }
-        }
+        return !runOnlyServices.isEmpty() && runOnlyServices.contains(beanName);
     }
 }

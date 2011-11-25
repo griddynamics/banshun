@@ -17,7 +17,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.SystemPropertyUtils;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
@@ -39,7 +38,7 @@ import java.util.*;
  * intended for the current usage
  */
 public class ContextParentBean implements InitializingBean, ApplicationContextAware, Registry, DisposableBean
-        , ApplicationListener {
+        , ApplicationListener, ExceptionsLogger {
     private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
     private Map<String, Exception> nestedContextsExceptions = new LinkedHashMap<String, Exception>();
 
@@ -47,8 +46,9 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     private List<ConfigurableApplicationContext> children = new ArrayList<ConfigurableApplicationContext>();
 
     protected String[] configLocations = new String[0];
+    protected List<String> resultConfigLocations;
     protected List<String> excludeConfigLocations = new ArrayList<String>();
-    protected Set<String> failedLocations = new HashSet<String>();
+    protected Set<String> ignoredLocations = new HashSet<String>();
 
     private boolean strictErrorHandling = false;
     private String childContextPrototype = null;
@@ -75,17 +75,28 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         this.excludeConfigLocations = Arrays.asList(excludeConfigLocations);
     }
 
+    public List<String> getResultConfigLocations() {
+        return resultConfigLocations;
+    }
+
     /**
      * resolves configs paths and build nested children contexts
      */
+    @Override
     public void afterPropertiesSet() throws Exception {
-        resolveConfigLocations();
-        excludeConfigLocations();
+        List<String> configLocations = new ArrayList<String>();
+        List<String> resolvedConfigLocations = resolveConfigLocations(configLocations);
+        List<String> narrowedConfigLocations = excludeConfigLocations(resolvedConfigLocations);
+        this.resultConfigLocations = analyzeDependencies(narrowedConfigLocations);
+    }
+
+    protected List<String> analyzeDependencies(List<String> configLocations) throws Exception {
+        return configLocations;
     }
 
     private void initializeChildContexts() {
-        for (String loc : configLocations) {
-            if (failedLocations.contains(loc)) {
+        for (String loc : resultConfigLocations) {
+            if (ignoredLocations.contains(loc)) {
                 continue;
             }
             try {
@@ -115,74 +126,50 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         }
     }
 
-    protected void resolveConfigLocations() throws Exception {
-        List<String> configLocs = new ArrayList<String>();
-        PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
-
-        for (int i = 0; i < configLocations.length; i++) {
-            String location = (SystemPropertyUtils.resolvePlaceholders(configLocations[i])).trim();
-            try {
-                addConfigLocations(pmrpr, location, configLocs, false);
-            } catch (Exception e) {
-                addConfigLocations(pmrpr, "file:" + location, configLocs, true);
-            }
-        }
-
-        log.info("Locations were resolved to that sequence: " + configLocs.toString());
-        configLocations = configLocs.toArray(new String[0]);
-    }
-
-    private void addConfigLocations(PathMatchingResourcePatternResolver pmrpr, String location,
-                                    List<String> configLocs, boolean isFileConfLoc) throws Exception {
-        boolean isPattern = pmrpr.getPathMatcher().isPattern(location);
-        Resource[] resources = pmrpr.getResources(location);
+    private List<String> collectConfigLocations(String location) throws IOException {
+        List<String> result = new ArrayList<String>();
+        Resource[] resources = context.getResources(location);
         for (Resource resource : resources) {
-            String locName = !isFileConfLoc ? resource.getURI().toString() : removeStandardPrefix(resource.getURI().toString());
-            if (!configLocs.contains(locName) && isPattern) {
-                configLocs.add(locName);
-            }
-            if (!isPattern) {
-                configLocs.remove(locName);
-                configLocs.add(locName);
+            result.add(resource.getURI().toString());
+        }
+        return result;
+    }
+
+    protected List<String> resolveConfigLocations(List<String> configLocations) throws Exception {
+        PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
+        for (String loc : this.configLocations) {
+            String location = loc;
+            boolean wildcard = pmrpr.getPathMatcher().isPattern(location);
+            List<String> collectedLocations = collectConfigLocations(location);
+            for (String locName : collectedLocations) {
+                if (!configLocations.contains(locName) && wildcard) {
+                    configLocations.add(locName);
+                }
+                if (!wildcard) {
+                    configLocations.remove(locName);
+                    configLocations.add(locName);
+                }
             }
         }
+
+        log.info("resolved locations: " + configLocations);
+
+        return configLocations;
     }
 
-    private String removeStandardPrefix(String location) {
-        return location.replace("file:/", "").replace("file:", "");
-    }
-
-    private void excludeConfigLocations() throws Exception {
-        List<String> res = new ArrayList<String>(Arrays.asList(configLocations));
-        PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
-
+    protected List<String> excludeConfigLocations(List<String> configLocations) throws Exception {
         for (String loc : excludeConfigLocations) {
-            String location = (SystemPropertyUtils.resolvePlaceholders(loc)).trim();
-
-            try {
-                removeConfigLocations(pmrpr, location, res, false);
-            } catch (Exception e) {
-                removeConfigLocations(pmrpr, "file:" + location, res, true);
-            }
+            String location = loc;
+            configLocations.removeAll(collectConfigLocations(location));
         }
-
-        configLocations = res.toArray(new String[0]);
-    }
-
-    private void removeConfigLocations(PathMatchingResourcePatternResolver pmrpr, String location,
-                                    List<String> configLocs, boolean isFileConfLoc) throws Exception {
-        Resource[] resources = pmrpr.getResources(location);
-        for (Resource resource : resources) {
-            String locName = !isFileConfLoc ? resource.getURI().toString() : removeStandardPrefix(resource.getURI().toString());
-            configLocs.remove(locName);
-        }
+        return configLocations;
     }
 
     protected void addToFailedLocations(String loc) {
     }
 
-    public Set<String> getFailedLocations() {
-        return failedLocations;
+    public Set<String> getIgnoredLocations() {
+        return ignoredLocations;
     }
 
     public void onApplicationEvent(ApplicationEvent event) {
@@ -205,6 +192,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         return new SingleResourceXmlChildContext(res, parent);
     }
 
+    @Override
     public Map<String, Exception> getNestedContextsExceptions() {
         return nestedContextsExceptions;
     }
@@ -240,10 +228,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         String singletonBeanName = ref.getTarget() + TARGET_SOURCE_SUFFIX;
 
         if (!context.containsBean(singletonBeanName)) {
-            ExportTargetSource exportTargetSource = new ExportTargetSource();
-            exportTargetSource.setTargetBeanName(ref.getTarget());
-            exportTargetSource.setTargetClass(ref.getInterfaceClass());
-            exportTargetSource.setBeanFactory(ref.getBeanFactory());
+            ExportTargetSource exportTargetSource = new ExportTargetSource(ref.getTarget(), ref.getInterfaceClass(), ref.getBeanFactory());
 
             ((AbstractApplicationContext) context).getBeanFactory()
                     .registerSingleton(singletonBeanName, exportTargetSource);
