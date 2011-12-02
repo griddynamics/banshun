@@ -3,10 +3,12 @@ package com.griddynamics.spring.nested.wildcards;
 import com.griddynamics.spring.nested.ContextParentBean;
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertThat;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -65,8 +67,8 @@ public class WildcardsTest {
         assertTrue(registry.getResultConfigLocations().get(3).contains("ctx3.xml"));
         assertTrue(registry.getResultConfigLocations().get(4).contains("ctx5.xml"));
         assertTrue(registry.getResultConfigLocations().get(5).contains("ctx6.xml"));
-        assertTrue(registry.getResultConfigLocations().get(6).contains("ctx8.xml"));
-        assertTrue(registry.getResultConfigLocations().get(7).contains("ctx7.xml"));
+        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx8.xml"));
+        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx7.xml"));
     }
 
     @Test
@@ -96,11 +98,22 @@ public class WildcardsTest {
         registry.afterPropertiesSet();
 
         assertEquals(6, registry.getResultConfigLocations().size());
-        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
-        assertTrue(registry.getResultConfigLocations().get(1).contains("ctx3.xml"));
-        assertTrue(registry.getResultConfigLocations().get(2).contains("ctx5.xml"));
-        assertTrue(registry.getResultConfigLocations().get(3).contains("ctx4.xml"));
-        assertTrue(registry.getResultConfigLocations().get(4).contains("ctx2.xml"));
-        assertTrue(registry.getResultConfigLocations().get(5).contains("ctx6.xml"));
+        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx1.xml"));
+        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx3.xml"));
+        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx5.xml"));
+        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx4.xml"));
+        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx2.xml"));
+        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx6.xml"));
+    }
+
+    private boolean hasLocation(List<String> locations, String location) {
+        boolean res = false;
+        for (String loc : locations) {
+            if (loc.contains(location)) {
+                res = true;
+                break;
+            }
+        }
+        return res;
     }
 }
