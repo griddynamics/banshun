@@ -35,19 +35,12 @@ public class SkipContextTest {
         assertEquals(5, ignoredLocations.size());
         assertEquals(2, registry.getChildren().size());
 
-        assertTrue(containsCtx(ignoredLocations, "ctx2.xml"));
-        assertTrue(containsCtx(ignoredLocations, "ctx3.xml"));
-        assertTrue(containsCtx(ignoredLocations, "ctx4.xml"));
-        assertTrue(containsCtx(ignoredLocations, "ctx5.xml"));
-        assertTrue(containsCtx(ignoredLocations, "ctx6.xml"));
-    }
+        String result = registry.getResultConfigLocations().toString();
 
-    private boolean containsCtx(Set<String> set, String query) {
-        for (String s : set) {
-            if (s.contains(query)) {
-                return true;
-            }
-        }
-        return false;
+        assertTrue(result.contains("ctx2.xml") &&
+                result.contains("ctx3.xml") &&
+                result.contains("ctx4.xml") &&
+                result.contains("ctx5.xml") &&
+                result.contains("ctx6.xml"));
     }
 }
