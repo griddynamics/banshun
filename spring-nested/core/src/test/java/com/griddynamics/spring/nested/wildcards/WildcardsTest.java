@@ -3,12 +3,10 @@ package com.griddynamics.spring.nested.wildcards;
 import com.griddynamics.spring.nested.ContextParentBean;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertThat;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -45,7 +43,11 @@ public class WildcardsTest {
         registry.afterPropertiesSet();
 
         assertEquals(1, registry.getResultConfigLocations().size());
-        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx7.xml"));
+
+        final Pattern pattern = Pattern.compile("\\[.*ctx7\\.xml\\]");
+        String result = registry.getResultConfigLocations().toString();
+
+        assertTrue(pattern.matcher(result).matches());
     }
 
     @Test
@@ -61,14 +63,13 @@ public class WildcardsTest {
         registry.afterPropertiesSet();
 
         assertEquals(8, registry.getResultConfigLocations().size());
-        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
-        assertTrue(registry.getResultConfigLocations().get(1).contains("ctx4.xml"));
-        assertTrue(registry.getResultConfigLocations().get(2).contains("ctx2.xml"));
-        assertTrue(registry.getResultConfigLocations().get(3).contains("ctx3.xml"));
-        assertTrue(registry.getResultConfigLocations().get(4).contains("ctx5.xml"));
-        assertTrue(registry.getResultConfigLocations().get(5).contains("ctx6.xml"));
-        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx8.xml"));
-        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx7.xml"));
+
+        final Pattern pattern1 = Pattern.compile("\\[.*ctx1\\.xml(.*ctx2\\.xml.*ctx4\\.xml|.*ctx4\\.xml.*ctx2\\.xml)(.*ctx3\\.xml.*ctx5\\.xml|.*ctx5\\.xml.*ctx3\\.xml).*ctx6\\.xml.*\\]");
+        final Pattern pattern2 = Pattern.compile(".*ctx7\\.xml.*ctx8\\.xml.*|.*ctx8\\.xml.*ctx7\\.xml.*");
+        String result = registry.getResultConfigLocations().toString();
+
+        assertTrue(pattern1.matcher(result).matches());
+        assertTrue(pattern2.matcher(result).matches());
     }
 
     @Test
@@ -83,7 +84,11 @@ public class WildcardsTest {
         registry.afterPropertiesSet();
 
         assertEquals(1, registry.getResultConfigLocations().size());
-        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
+
+        final Pattern pattern = Pattern.compile("\\[.*ctx1\\.xml\\]");
+        String result = registry.getResultConfigLocations().toString();
+
+        assertTrue(pattern.matcher(result).matches());
     }
 
     @Test
@@ -98,22 +103,14 @@ public class WildcardsTest {
         registry.afterPropertiesSet();
 
         assertEquals(6, registry.getResultConfigLocations().size());
-        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx1.xml"));
-        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx3.xml"));
-        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx5.xml"));
-        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx4.xml"));
-        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx2.xml"));
-        assertTrue(hasLocation(registry.getResultConfigLocations(), "ctx6.xml"));
-    }
 
-    private boolean hasLocation(List<String> locations, String location) {
-        boolean res = false;
-        for (String loc : locations) {
-            if (loc.contains(location)) {
-                res = true;
-                break;
-            }
-        }
-        return res;
+        String result = registry.getResultConfigLocations().toString();
+
+        assertTrue(result.contains("ctx1.xml") &&
+                result.contains("ctx3.xml") &&
+                result.contains("ctx5.xml") &&
+                result.contains("ctx2.xml") &&
+                result.contains("ctx4.xml") &&
+                result.contains("ctx6.xml"));
     }
 }

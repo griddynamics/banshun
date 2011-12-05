@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
@@ -32,7 +33,11 @@ public class DynamicProfilesTest {
         registry.afterPropertiesSet();
 
         assertEquals(1, registry.getResultConfigLocations().size());
-        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
+
+        final Pattern pattern = Pattern.compile("\\[.*ctx1\\.xml\\]");
+        String result = registry.getResultConfigLocations().toString();
+
+        assertTrue(pattern.matcher(result).matches());
     }
 
     @Test
@@ -43,10 +48,11 @@ public class DynamicProfilesTest {
         registry.afterPropertiesSet();
 
         assertEquals(4, registry.getResultConfigLocations().size());
-        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
-        assertTrue(registry.getResultConfigLocations().get(1).contains("ctx2.xml"));
-        assertTrue(registry.getResultConfigLocations().get(2).contains("ctx7.xml"));
-        assertTrue(registry.getResultConfigLocations().get(3).contains("ctx3.xml"));
+
+        final Pattern pattern = Pattern.compile("\\[.*ctx1\\.xml(.*ctx7\\.xml.*ctx2\\.xml|.*ctx2\\.xml.*ctx7\\.xml).*ctx3\\.xml.*\\]");
+        String result = registry.getResultConfigLocations().toString();
+
+        assertTrue(pattern.matcher(result).matches());
     }
 
     @Test
@@ -57,10 +63,11 @@ public class DynamicProfilesTest {
         registry.afterPropertiesSet();
 
         assertEquals(4, registry.getResultConfigLocations().size());
-        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
-        assertTrue(registry.getResultConfigLocations().get(1).contains("ctx2.xml"));
-        assertTrue(registry.getResultConfigLocations().get(2).contains("ctx7.xml"));
-        assertTrue(registry.getResultConfigLocations().get(3).contains("ctx6.xml"));
+
+        final Pattern pattern = Pattern.compile("\\[.*ctx1\\.xml(.*ctx7\\.xml.*ctx2\\.xml|.*ctx2\\.xml.*ctx7\\.xml).*ctx6\\.xml.*\\]");
+        String result = registry.getResultConfigLocations().toString();
+
+        assertTrue(pattern.matcher(result).matches());
     }
 
     @Test
@@ -71,12 +78,14 @@ public class DynamicProfilesTest {
         registry.afterPropertiesSet();
 
         assertEquals(7, registry.getResultConfigLocations().size());
-        assertTrue(registry.getResultConfigLocations().get(0).contains("ctx1.xml"));
-        assertTrue(registry.getResultConfigLocations().get(1).contains("ctx2.xml"));
-        assertTrue(registry.getResultConfigLocations().get(2).contains("ctx7.xml"));
-        assertTrue(registry.getResultConfigLocations().get(3).contains("ctx3.xml"));
-        assertTrue(registry.getResultConfigLocations().get(4).contains("ctx4.xml"));
-        assertTrue(registry.getResultConfigLocations().get(5).contains("ctx6.xml"));
-        assertTrue(registry.getResultConfigLocations().get(6).contains("ctx5.xml"));
+
+        final Pattern mainPattern = Pattern.compile("\\[.*ctx1\\.xml(.*ctx7\\.xml.*ctx2\\.xml|.*ctx2\\.xml.*ctx7\\.xml)(.*ctx6\\.xml.*ctx3\\.xml|.*ctx3\\.xml.*ctx6\\.xml).*\\]");
+        final Pattern pattern5After4And6 = Pattern.compile("\\[(.*ctx4\\.xml.*ctx6\\.xml|.*ctx6\\.xml.*ctx4\\.xml).*ctx5\\.xml.*\\]");
+        final Pattern pattern4After3 = Pattern.compile("\\[.*ctx3\\.xml.*ctx4\\.xml.*\\]");
+        String result = registry.getResultConfigLocations().toString();
+
+        assertTrue(mainPattern.matcher(result).matches());
+        assertTrue(pattern4After3.matcher(result).matches());
+        assertTrue(pattern5After4And6.matcher(result).matches());
     }
 }
