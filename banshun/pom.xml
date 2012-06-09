@@ -52,7 +52,7 @@
         <snapshotRepository>
             <id>gd-nexus-snapshots</id>
             <name>gd-nexus-snapshots</name>
-            <url>https://nexus.griddynamics.net/nexus/content/repositories/public-snapshots/</url>
+            <url>https://nexus.griddynamics.net/nexus/content/repositories/banshun-snapshots/</url>
             <layout>default</layout>
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
@@ -60,7 +60,7 @@
         <repository>
             <id>gd-nexus-releases</id>
             <name>gd-nexus-releases</name>
-            <url>https://nexus.griddynamics.net/nexus/content/repositories/public/</url>
+            <url>https://nexus.griddynamics.net/nexus/content/repositories/banshun-releases/</url>
             <layout>default</layout>
         </repository>
     </distributionManagement>
