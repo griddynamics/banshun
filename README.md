@@ -17,6 +17,7 @@ When you have a modular application written in spring and tired of standard spri
 
 First of all check banshun wiki page.
 Short presentation with key concepts can be found at: [presentation][presentation]
+
 Also we have several blog posts about banshun which can be found at: [banshun][gd_nested_blog]
 
 [gd_nested_blog]: http://blog.griddynamics.com/search/label/Spring
