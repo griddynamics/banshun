@@ -19,7 +19,6 @@
 package com.griddynamics.banshun.xml;
 
 import com.griddynamics.banshun.ExportRef;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanCreationException;
@@ -41,26 +40,29 @@ import org.w3c.dom.Element;
  * @date: Sep 14, 2010
  */
 public class NestedBeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
+
     @SuppressWarnings("unused")
 	private static final Logger log = LoggerFactory.getLogger(NestedBeanDefinitionParser.class);
 
-    private final static String ROOT_DEFAULT_NAME = "root";
-    private final static String EXPORT = "export";
-    private final static String IMPORT = "import";
-
-    private final static String ID = "id";
-    private final static String INTERFACE = "interface";
-    private final static String REF = "ref";
-    private final static String NAME = "name";
-    private final static String ROOT = "root";
+    private final static String
+            ROOT_DEFAULT_NAME = "root",
+            EXPORT = "export",
+            IMPORT = "import",
+            ID = "id",
+            INTERFACE = "interface",
+            REF = "ref",
+            NAME = "name",
+            ROOT = "root";
 
 
     @Override
     protected String getBeanClassName(Element element) {
         String localName = element.getLocalName();
-        if(EXPORT.equals(localName) ) {
+
+        if (EXPORT.equals(localName) ) {
             return Void.class.getCanonicalName();
-        } else if( IMPORT.equals(localName) ) {
+
+        } else if (IMPORT.equals(localName)) {
             return element.getAttribute(INTERFACE);
         }
         throw new IllegalStateException("Unknown element '" + localName + "'");
@@ -69,12 +71,14 @@ public class NestedBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
     @Override
     protected String resolveId(Element element, AbstractBeanDefinition definition, ParserContext parserContext) throws BeanDefinitionStoreException {
         String localName = element.getLocalName();
-        if(EXPORT.equals(localName) ) {
+
+        if (EXPORT.equals(localName)) {
             return element.getAttribute(REF)
                     + "$export"
                     + BeanFactoryUtils.GENERATED_BEAN_NAME_SEPARATOR
                     + ObjectUtils.getIdentityHexString(definition);
-        } else if(IMPORT.equals(localName) ) {
+
+        } else if (IMPORT.equals(localName)) {
             return super.resolveId(element, definition, parserContext);
         }
         throw new IllegalStateException("Unknown element '" + localName + "'");
@@ -83,26 +87,28 @@ public class NestedBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
     @Override
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
         String localName = element.getLocalName();
-        if( EXPORT.equals(localName) ) {
+
+        if (EXPORT.equals(localName)) {
             parseExport(element, parserContext);
-        } else if( IMPORT.equals(localName) ) {
+        } else if (IMPORT.equals(localName)) {
             parseImport(element, parserContext, builder);
         }
     }
 
     private void parseImport(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
         String exportInterface = element.getAttribute(INTERFACE);
-        if( isNullOrEmpty(exportInterface) ) {
+
+        if (isNullOrEmpty(exportInterface)) {
             return;
         }
 
         String externalName = element.getAttribute(ID);
-        if( isNullOrEmpty(externalName) ) {
+        if (isNullOrEmpty(externalName)) {
             return;
         }
 
         String rootName = element.getAttribute(ROOT);
-        if( isNullOrEmpty(rootName) ) {
+        if (isNullOrEmpty(rootName)) {
             rootName = ROOT_DEFAULT_NAME;
         }
 
@@ -125,29 +131,29 @@ public class NestedBeanDefinitionParser extends AbstractSingleBeanDefinitionPars
 
     private void parseExport(Element element, ParserContext parserContext) {
         String exportInterface = element.getAttribute(INTERFACE);
-        if( isNullOrEmpty(exportInterface) ) {
+        if (isNullOrEmpty(exportInterface)) {
             return;
         }
 
         String exportBeanRef = element.getAttribute(REF);
-        if( isNullOrEmpty(exportBeanRef) ) {
+        if (isNullOrEmpty(exportBeanRef)) {
             return;
         }
 
         String rootName = element.getAttribute(ROOT);
-        if( isNullOrEmpty(rootName) ) {
+        if (isNullOrEmpty(rootName)) {
             rootName = ROOT_DEFAULT_NAME;
         }
 
         String exportName = element.getAttribute(NAME);
-        if( isNullOrEmpty(exportName) ) {
+        if (isNullOrEmpty(exportName)) {
             exportName = exportBeanRef;
         }
 
         String exportRefName = exportName + "-export-ref";
 
         BeanDefinitionRegistry registry = parserContext.getRegistry();
-        if( registry.containsBeanDefinition(exportRefName) ) {
+        if (registry.containsBeanDefinition(exportRefName)) {
             throw new BeanCreationException("Registry already contains bean with name " + exportRefName);
         }
 

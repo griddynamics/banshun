@@ -101,7 +101,8 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
         analyzer.areThereExportsWithoutImport();
 
         if (analyzer.areThereImportsWithoutExports() || !analyzer.areImportsTypesCorrect()) {
-            exceptions.add(new BeanDefinitionValidationException("There are severe errors while parsing contexts. See logs for details"));
+            exceptions.add(new BeanDefinitionValidationException(
+                    "There are severe errors while parsing contexts. See logs for details"));
         }
         
         if (!exceptions.isEmpty()) {
@@ -117,7 +118,7 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
         locationsGraph = new LocationsGraph(analyzer.getImports(), analyzer.getExports());
         List<String> analyzedConfigLocations = locationsGraph.filterConfigLocations(limitedLocations, sorter.sort());
 
-        log.info("ordered list of the contexts: " + analyzedConfigLocations);
+        log.info("ordered list of the contexts: {}", analyzedConfigLocations);
 
         return analyzedConfigLocations;
     }
@@ -126,7 +127,8 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
         try {
             Class.forName(beanClassName);
         } catch (ClassNotFoundException e) {
-            throw new ClassNotFoundException (MessageFormat.format("Class not found {0} in location: {1} for bean: {2}", beanClassName, location, beanName));
+            throw new ClassNotFoundException (MessageFormat.format(
+                    "Class not found {0} in location: {1} for bean: {2}", beanClassName, location, beanName));
         }
     }
 
@@ -136,18 +138,17 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
         beanDefinitionReader.setEntityResolver(new ResourceEntityResolver(context));
         beanDefinitionReader.loadBeanDefinitions(location);
 
-        BeanDefinitionRegistry beanFactory = beanDefinitionReader.getBeanFactory();
-
-        return beanFactory;
+        return beanDefinitionReader.getBeanFactory();
     }
 
     /**
      * Check whether bean will be imported into other contexts.
-     * @param beanDefinition
-     * @return
+     *
+     * @param beanDefinition Definition of the bean to check.
+     * @return <tt>true</tt> if the bean will be imported, <tt>false</tt> otherwise.
      */
     private boolean isImport(BeanDefinition beanDefinition) {
-        if(beanDefinition.getFactoryMethodName() != null) {
+        if (beanDefinition.getFactoryMethodName() != null) {
             if (beanDefinition.getFactoryMethodName().equals("lookup")
                 && beanDefinition.getFactoryBeanName().equals(getName())) {
                 return true;
@@ -157,12 +158,13 @@ public class StrictContextParentBean extends ContextParentBean implements BeanNa
     }
 
     /**
-     * Check whether bean will be exported from this contexts into the other.
-     * @param beanDefinition
-     * @return
+     * Check whether bean will be exported from this context into others.
+     *
+     * @param beanDefinition Definition of the bean to check.
+     * @return <tt>true</tt> if the bean will be exported, <tt>false</tt> otherwise.
      */
     private boolean isExport(BeanDefinition beanDefinition) {
-        if(beanDefinition.getFactoryMethodName() != null) {
+        if (beanDefinition.getFactoryMethodName() != null) {
             if (beanDefinition.getFactoryMethodName().equals("export")
                 && beanDefinition.getFactoryBeanName().equals(getName())) {
                 return true;

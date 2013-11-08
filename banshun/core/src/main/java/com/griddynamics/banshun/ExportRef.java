@@ -40,20 +40,17 @@ public class ExportRef implements BeanFactoryAware {
         this.interfaceClass = interfaceClass;
     }
 
-    public void setTarget(String arg0) {
-        target = arg0;
+    public void setTarget(String target) {
+        this.target = target;
+    }
+
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
     }
 
     /**
-     * Used by Spring to inject beanFactory which will be used to resolve reference
-     */
-    public void setBeanFactory(BeanFactory arg0) throws BeansException {
-        beanFactory = arg0;
-    }
-
-    /**
-     * name of the exported service. used for find this export reference by key.
-     * also it used for find the actual service bean in injected bean factory.
+     * Name of the exported service. It's used to find this export reference by key
+     * and also to find the actual service bean in injected bean factory.
      * <idref> is useful to inject the bean name to this field.
      */
     public String getTarget() {
@@ -65,8 +62,8 @@ public class ExportRef implements BeanFactoryAware {
     }
 
     /**
-     * constraint for this reference. requested lookup calls should specify the same
-     * interface
+     * Constraint for this reference. The requested lookup calls should specify
+     * the same interface.
      */
     public Class<?> getInterfaceClass() {
         return interfaceClass;

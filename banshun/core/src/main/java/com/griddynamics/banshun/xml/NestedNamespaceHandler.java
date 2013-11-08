@@ -19,11 +19,13 @@
 package com.griddynamics.banshun.xml;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
+
 /**
  * @author oleg
  * @date Sep 14, 2010
  */
 public class NestedNamespaceHandler extends NamespaceHandlerSupport {
+
     public void init() {
         super.registerBeanDefinitionParser("export", new NestedBeanDefinitionParser() );
         super.registerBeanDefinitionParser("import", new NestedBeanDefinitionParser() );

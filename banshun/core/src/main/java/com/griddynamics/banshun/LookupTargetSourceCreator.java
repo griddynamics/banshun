@@ -42,9 +42,7 @@ public class LookupTargetSourceCreator implements TargetSourceCreator, Applicati
         String actualBeanName = matcher.group(1);
         String name = actualBeanName + ContextParentBean.TARGET_SOURCE_SUFFIX;
 
-        LookupTargetSource lts = new LookupTargetSource(context, name, beanClass);
-
-        return lts;
+        return new LookupTargetSource(context, name, beanClass);
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

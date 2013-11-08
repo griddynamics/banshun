@@ -21,12 +21,8 @@ package com.griddynamics.banshun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.config.ConstructorArgumentValues;
+import org.springframework.beans.factory.config.*;
 import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
-import org.springframework.beans.factory.config.RuntimeBeanNameReference;
-import org.springframework.beans.factory.config.TypedStringValue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,6 +50,7 @@ public class ContextAnalyzer {
         shortBeanDefinition.setBeanName(importedBeanName);
         shortBeanDefinition.setBeanInterface(beanInterface);        
         shortBeanDefinition.setLocation(location);
+
         return shortBeanDefinition;
     }
 
@@ -78,7 +75,7 @@ public class ContextAnalyzer {
             if (!exports.containsKey(importedBeanName)) {
                 allImportsHaveExports = true;
                 String location = imports.get(importedBeanName).get(0).getLocation();
-                log.error("Import without export was found. Bean: " + importedBeanName + " location: " + location);
+                log.error("Import without export was found. Bean: {} location: {}", importedBeanName, location);
             }
         }
         
@@ -91,12 +88,15 @@ public class ContextAnalyzer {
         for (String exportedBeanName : exports.keySet()) {
             if (imports.containsKey(exportedBeanName)) {
                 Class<?> exportedBeanInterface = exports.get(exportedBeanName).getBeanInterface();
+
                 for (BeanReferenceInfo refInfo : imports.get(exportedBeanName)) {
                     Class<?> importedBeanInterface = refInfo.getBeanInterface();
                     
                     if (!importedBeanInterface.isAssignableFrom(exportedBeanInterface)) {
                        importsTypesAreCorrect = false;
-                       log.error("Imported bean " + exportedBeanName + " from location " + refInfo.getLocation() + " must implement same interface that appropriate exported bean " + exportedBeanName + " or subinterface but no superclass or superinterface");
+                       log.error("Imported bean {} from location {} must implement same interface that appropriate" +
+                                 "exported bean {} or subinterface but no superclass or superinterface",
+                               new Object[]{exportedBeanName, refInfo.getLocation(), exportedBeanName});
                     }
                 }
             }
@@ -111,7 +111,7 @@ public class ContextAnalyzer {
         for (String exportedBeanName : exports.keySet()) {
             if (!imports.containsKey(exportedBeanName)) {
                 allExportshaveImports = false;
-                log.warn("Bean " + exportedBeanName + " was exported but never imported");
+                log.warn("Bean {} was exported but never imported", exportedBeanName);
             }
         }
         
@@ -123,12 +123,12 @@ public class ContextAnalyzer {
         ConstructorArgumentValues argumentValues = beanDefinition.getConstructorArgumentValues();
 
         ValueHolder valueHolder = argumentValues.getArgumentValue(0, BeanDefinitionHolder.class);
-        BeanDefinition exportRefBeanDefinition = null;
-        if(valueHolder != null) {
+        BeanDefinition exportRefBeanDefinition;
+        if (valueHolder != null) {
             BeanDefinitionHolder holder = (BeanDefinitionHolder) valueHolder.getValue();
-            exportRefBeanDefinition = (BeanDefinition) holder.getBeanDefinition();
+            exportRefBeanDefinition = holder.getBeanDefinition();
         } else {
-            exportRefBeanDefinition = (BeanDefinition) ((ValueHolder)argumentValues.getGenericArgumentValues().get(0)).getValue();
+            exportRefBeanDefinition = (BeanDefinition) (argumentValues.getGenericArgumentValues().get(0)).getValue();
         }
 
         return parseLookupOrExportRefArg(exportRefBeanDefinition, location);
@@ -137,14 +137,15 @@ public class ContextAnalyzer {
     protected String getTargetBeanName(BeanDefinition beanDefinition) {
         String importedBeanName = null;
         
-        ConstructorArgumentValues.ValueHolder valueHolder = (ValueHolder) beanDefinition.getConstructorArgumentValues().getGenericArgumentValues().get(0);
+        ConstructorArgumentValues.ValueHolder valueHolder = beanDefinition
+                .getConstructorArgumentValues().getGenericArgumentValues().get(0);
         Object beanNameValueHolder = valueHolder.getValue();
         
         if (beanNameValueHolder instanceof RuntimeBeanNameReference) {
             importedBeanName = ((RuntimeBeanNameReference)valueHolder.getValue()).getBeanName();
         } else if (beanNameValueHolder instanceof TypedStringValue) {
             importedBeanName = ((TypedStringValue)valueHolder.getValue()).getValue();
-        } else if(beanNameValueHolder instanceof String) {
+        } else if (beanNameValueHolder instanceof String) {
             importedBeanName = (String)beanNameValueHolder;
         }
         
@@ -154,7 +155,8 @@ public class ContextAnalyzer {
     private Class<?> getTargetBeanInterface(BeanDefinition beanDefinition) throws ClassNotFoundException {
         Class<?> beanInterface = null;
 
-        ConstructorArgumentValues.ValueHolder valueHolder = beanDefinition.getConstructorArgumentValues().getGenericArgumentValues().get(1);
+        ConstructorArgumentValues.ValueHolder valueHolder = beanDefinition
+                .getConstructorArgumentValues().getGenericArgumentValues().get(1);
 
         Object beanInterfaceName = valueHolder.getValue();
 
@@ -183,7 +185,9 @@ public class ContextAnalyzer {
         String exportedBeanName = exportRefInfo.getBeanName();
         
         if (exports.containsKey(exportedBeanName)) {
-            throw new BeanCreationException("Double export was defined: " + exportedBeanName + " in context " + exportRefInfo.getLocation() + ". Previous export was in context " + exports.get(exportedBeanName).getLocation());
+            throw new BeanCreationException(String.format(
+                    "Double export was defined: %s in context %s. Previous export was in context %s",
+                    exportedBeanName, exportRefInfo.getLocation(), exports.get(exportedBeanName).getLocation()));
         } else {            
             exports.put(exportedBeanName, exportRefInfo);
         }

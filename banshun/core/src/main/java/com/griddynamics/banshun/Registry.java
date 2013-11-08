@@ -19,23 +19,26 @@
 package com.griddynamics.banshun;
 
 /**
- * @Description: Registry for export and import services by name with a constraint by
+ * Registry for exported and imported services by name with a constraint by
  * an interface.
- * The singleton bean implements this interface instantiated by the root context and available
- * for the nested children context via intrinsic Spring feature "parent context".
+ *
+ * The singleton bean implements this interface instantiated by the root context
+ * and available for the nested children context via intrinsic Spring feature
+ * "parent context".
  */
 public interface Registry {
+
     /**
-     * export the given service reference
+     * Exports the given service reference.
      */
     Void export(ExportRef ref);
 
     /**
-     * imports a service by name
+     * Imports a service by the name.
      *
-     * @param name  key for find a service. usually camel case name used during export
-     * @param clazz expected interface for the service. should be match with the interface used during an export
-     * @return proxy for the requested service
+     * @param name  The key to find a service with. It's usually camelCase name used during export.
+     * @param clazz The expected interface for the service. It should match with the interface used during an export.
+     * @return A proxy of the requested service.
      */
     <T> T lookup(final String name, final Class<T> clazz);
 }

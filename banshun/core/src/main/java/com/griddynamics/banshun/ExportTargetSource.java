@@ -46,32 +46,29 @@ public class ExportTargetSource implements TargetSource {
     }
 
     public String getTargetBeanName() {
-        return this.targetBeanName;
+        return targetBeanName;
     }
 
-    @Override
     public Class<?> getTargetClass() {
-        return this.targetClass;
+        return targetClass;
     }
 
-    @Override
     public boolean isStatic() {
         return true;
     }
 
-    @Override
-    public void releaseTarget(Object target) throws Exception {
+    public void releaseTarget(Object target) {
     }
 
-    @Override
     public Object getTarget() throws BeansException {
         Object localTarget = target.get();
+
         if (localTarget == null) {
             if (target.compareAndSet(null, localTarget = getBeanFactory().getBean(getTargetBeanName()))) {
                 return localTarget;
             } else {
                 // log potentially redundant instance initialization
-                log.info("needles creation of bean " + targetBeanName + "caused by concurrency has been detected. ignoring new instance");
+                log.info("Needles creation of bean {} caused by concurrency has been detected. Ignoring new instance.", targetBeanName);
                 return target.get();
             }
         }

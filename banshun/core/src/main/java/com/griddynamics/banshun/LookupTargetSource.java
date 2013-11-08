@@ -54,37 +54,35 @@ public class LookupTargetSource implements TargetSource {
         return this.targetBeanName;
     }
 
-    @Override
     public Class<?> getTargetClass() {
         return this.targetClass;
     }
 
-    @Override
     public boolean isStatic() {
         return false;
     }
 
-    @Override
     public void releaseTarget(Object target) throws Exception {
     }
 
-    @Override
     public Object getTarget() throws BeansException {
         Object localTarget = target.get();
+
         if (localTarget == null) {
             if (context.containsBean(getTargetBeanName())) {
                 ExportTargetSource ets = (ExportTargetSource) context.getBean(getTargetBeanName(), TargetSource.class);
                 checkForCorrectAssignment(ets.getTargetClass(), actualBeanName, ets.getBeanFactory().getType(actualBeanName));
+
                 if (target.compareAndSet(null, localTarget = ets.getTarget())) {
                     return localTarget;
                 } else {
                     // log potentially redundant instance initialization
-                    log.warn("Bean " + actualBeanName + "was created earlier");
+                    log.warn("Bean {} was created earlier", actualBeanName);
                     return target.get();
                 }
             } else {
-                throw new NoSuchBeanDefinitionException(actualBeanName, "can't find export declaration for lookup("
-                        + actualBeanName + "," + getTargetClass() + ")");
+                throw new NoSuchBeanDefinitionException(actualBeanName, String.format(
+                        "can't find export declaration for lookup(%s, %s)", actualBeanName, getTargetClass()));
             }
         }
         return localTarget;
@@ -96,7 +94,8 @@ public class LookupTargetSource implements TargetSource {
         }
 
         if (!exportClass.isAssignableFrom(actualBeanClass)) {
-            throw new BeanCreationException(actualBeanName, new BeanNotOfRequiredTypeException(actualBeanName, actualBeanClass, exportClass));
+            throw new BeanCreationException(actualBeanName,
+                    new BeanNotOfRequiredTypeException(actualBeanName, actualBeanClass, exportClass));
         }
     }
 }
