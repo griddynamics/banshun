@@ -59,6 +59,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
     public static final String BEAN_DEF_SUFFIX = "_beanDef";
     public static final String EXPORT_REF_SUFFIX = "-export-ref";
 
+
     /**
      * Specifies whether initialization of this bean should fail if one of the
      * nested children contexts fails to build.
@@ -73,13 +74,79 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         this.childContextPrototype = childContextPrototype;
     }
 
-    public void setExcludeConfigLocations(String[] excludeConfigLocations) {
-        this.excludeConfigLocations = Arrays.asList(excludeConfigLocations);
+    /**
+     * @return List of the instantiated nested contexts.
+     */
+    public List<ConfigurableApplicationContext> getChildren() {
+        return Collections.unmodifiableList(children);
+    }
+
+    public String[] getConfigLocations() {
+        return configLocations;
+    }
+
+    public Set<String> getIgnoredLocations() {
+        return ignoredLocations;
     }
 
     public List<String> getResultConfigLocations() {
         return resultConfigLocations;
     }
+
+    public void setExcludeConfigLocations(String[] excludeConfigLocations) {
+        this.excludeConfigLocations = Arrays.asList(excludeConfigLocations);
+    }
+
+    public Map<String, Exception> getNestedContextsExceptions() {
+        return nestedContextsExceptions;
+    }
+
+    public void setApplicationContext(ApplicationContext context) throws BeansException {
+        this.context = context;
+        this.beanFactory = ((AbstractApplicationContext) context).getBeanFactory();
+    }
+
+
+    /**
+     * delimiter separated list of Spring-usual resources specifies. classpath*: classpath:, file:
+     * start wildcards are supported.
+     * delimiters are {@link ConfigurableApplicationContext#CONFIG_LOCATION_DELIMITERS}
+     */
+    public void setConfigLocations(String[] locations) throws Exception {
+        Assert.noNullElements(locations, "Config locations must not be null");
+
+        this.configLocations = locations;
+    }
+
+
+    public Void export(ExportRef ref) {
+        log.debug("Exporting bean '{}' with interface '{}'", ref.getTarget(), ref.getInterfaceClass().getSimpleName());
+
+        String singletonBeanName = ref.getTarget() + TARGET_SOURCE_SUFFIX;
+
+        if (!context.containsBean(singletonBeanName)) {
+            ExportTargetSource exportTargetSource = new ExportTargetSource(ref.getTarget(), ref.getInterfaceClass(), ref.getBeanFactory());
+
+            beanFactory.registerSingleton(singletonBeanName, exportTargetSource);
+        }
+
+        return null;
+    }
+
+    public <T> T lookup(String name, Class<T> clazz) {
+        log.debug("Looking up bean '{}' with interface '{}'", name, clazz.getSimpleName());
+
+        String beanDefinitionName = name + BEAN_DEF_SUFFIX;
+
+        if (!context.containsBean(beanDefinitionName)) {
+            BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(clazz).getBeanDefinition();
+
+            ((BeanDefinitionRegistry) beanFactory).registerBeanDefinition(beanDefinitionName, beanDefinition);
+        }
+
+        return context.getBean(beanDefinitionName, clazz);
+    }
+
 
     /**
      * Resolves configs paths and build nested children contexts.
@@ -91,8 +158,68 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         this.resultConfigLocations = analyzeDependencies(narrowedConfigLocations);
     }
 
+    public void onApplicationEvent(ApplicationEvent event) {
+        if (event instanceof ContextRefreshedEvent) {
+            if (context.equals(((ContextRefreshedEvent) event).getApplicationContext())) {
+                initializeChildContexts();
+            }
+        }
+    }
+
+    public void destroy() throws Exception {
+        Collections.reverse(children);
+        for (ConfigurableApplicationContext child : children) {
+            child.close();
+        }
+    }
+
+
     protected List<String> analyzeDependencies(List<String> configLocations) throws Exception {
         return configLocations;
+    }
+
+    protected List<String> excludeConfigLocations(List<String> configLocations) throws Exception {
+        for (String location : excludeConfigLocations) {
+            configLocations.removeAll(collectConfigLocations(location));
+        }
+        return configLocations;
+    }
+
+    protected List<String> resolveConfigLocations(List<String> configLocations) throws Exception {
+        PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
+
+        for (String location : this.configLocations) {
+            boolean wildcard = pmrpr.getPathMatcher().isPattern(location);
+            List<String> collectedLocations = collectConfigLocations(location);
+
+            for (String locName : collectedLocations) {
+                if (!configLocations.contains(locName) && wildcard) {
+                    configLocations.add(locName);
+                }
+                if (!wildcard) {
+                    configLocations.remove(locName);
+                    configLocations.add(locName);
+                }
+            }
+        }
+
+        log.info("resolved locations: {}", configLocations);
+
+        return configLocations;
+    }
+
+    protected void addToFailedLocations(String loc) {
+    }
+
+
+    private List<String> collectConfigLocations(String location) throws IOException {
+        List<String> result = new ArrayList<String>();
+        Resource[] resources = context.getResources(location);
+
+        for (Resource resource : resources) {
+            result.add(resource.getURI().toString());
+        }
+        return result;
     }
 
     private void initializeChildContexts() {
@@ -127,61 +254,6 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         }
     }
 
-    private List<String> collectConfigLocations(String location) throws IOException {
-        List<String> result = new ArrayList<String>();
-        Resource[] resources = context.getResources(location);
-
-        for (Resource resource : resources) {
-            result.add(resource.getURI().toString());
-        }
-        return result;
-    }
-
-    protected List<String> resolveConfigLocations(List<String> configLocations) throws Exception {
-        PathMatchingResourcePatternResolver pmrpr = new PathMatchingResourcePatternResolver();
-
-        for (String location : this.configLocations) {
-            boolean wildcard = pmrpr.getPathMatcher().isPattern(location);
-            List<String> collectedLocations = collectConfigLocations(location);
-
-            for (String locName : collectedLocations) {
-                if (!configLocations.contains(locName) && wildcard) {
-                    configLocations.add(locName);
-                }
-                if (!wildcard) {
-                    configLocations.remove(locName);
-                    configLocations.add(locName);
-                }
-            }
-        }
-
-        log.info("resolved locations: {}", configLocations);
-
-        return configLocations;
-    }
-
-    protected List<String> excludeConfigLocations(List<String> configLocations) throws Exception {
-        for (String location : excludeConfigLocations) {
-            configLocations.removeAll(collectConfigLocations(location));
-        }
-        return configLocations;
-    }
-
-    protected void addToFailedLocations(String loc) {
-    }
-
-    public Set<String> getIgnoredLocations() {
-        return ignoredLocations;
-    }
-
-    public void onApplicationEvent(ApplicationEvent event) {
-        if (event instanceof ContextRefreshedEvent) {
-            if (context.equals(((ContextRefreshedEvent) event).getApplicationContext())) {
-                initializeChildContexts();
-            }
-        }
-    }
-
     private ConfigurableApplicationContext createChildContext(Resource res, ApplicationContext parent) throws Exception {
         if (childContextPrototype != null && childContextPrototype.length() > 0) {
             try {
@@ -195,69 +267,4 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         return new SingleResourceXmlChildContext(res, parent);
     }
 
-    public Map<String, Exception> getNestedContextsExceptions() {
-        return nestedContextsExceptions;
-    }
-
-    public void setApplicationContext(ApplicationContext context) throws BeansException {
-        this.context = context;
-        this.beanFactory = ((AbstractApplicationContext) context).getBeanFactory();
-    }
-
-    /**
-     * delimiter separated list of Spring-usual resources specifies. classpath*: classpath:, file:
-     * start wildcards are supported.
-     * delimiters are {@link ConfigurableApplicationContext#CONFIG_LOCATION_DELIMITERS}
-     */
-    public void setConfigLocations(String[] locations) throws Exception {
-        Assert.noNullElements(locations, "Config locations must not be null");
-
-        configLocations = locations;
-    }
-
-    /**
-     * @return List of the instantiated nested contexts.
-     */
-    public List<ConfigurableApplicationContext> getChildren() {
-        return Collections.unmodifiableList(children);
-    }
-
-    public Void export(ExportRef ref) {
-        log.debug("Exporting bean '{}' with interface '{}'", ref.getTarget(), ref.getInterfaceClass().getSimpleName());
-
-        String singletonBeanName = ref.getTarget() + TARGET_SOURCE_SUFFIX;
-
-        if (!context.containsBean(singletonBeanName)) {
-            ExportTargetSource exportTargetSource = new ExportTargetSource(ref.getTarget(), ref.getInterfaceClass(), ref.getBeanFactory());
-
-            beanFactory.registerSingleton(singletonBeanName, exportTargetSource);
-        }
-
-        return null;
-    }
-
-    public <T> T lookup(String name, Class<T> clazz) {
-        log.debug("Looking up bean '{}' with interface '{}'", name, clazz.getSimpleName());
-
-        String beanDefinitionName = name + BEAN_DEF_SUFFIX;
-
-        if (!context.containsBean(beanDefinitionName)) {
-            BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(clazz).getBeanDefinition();
-
-            ((BeanDefinitionRegistry) beanFactory).registerBeanDefinition(beanDefinitionName, beanDefinition);
-        }
-
-        return context.getBean(beanDefinitionName, clazz);
-    }
-
-    public void destroy() throws Exception {
-        Collections.reverse(children);
-        for (ConfigurableApplicationContext child : children) {
-            child.close();
-        }
-    }
-
-    public String[] getConfigLocations() {
-        return configLocations;
-    }
 }

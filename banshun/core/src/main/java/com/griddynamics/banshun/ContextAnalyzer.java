@@ -30,44 +30,33 @@ import java.util.List;
 import java.util.Map;
 
 public class ContextAnalyzer {
+
     private static final Logger log = LoggerFactory.getLogger(ContextAnalyzer.class);
 
     private Map<String, BeanReferenceInfo> exports = new HashMap<String, BeanReferenceInfo>();
     private Map<String, List<BeanReferenceInfo>> imports = new HashMap<String, List<BeanReferenceInfo>>();
-    
+
+
+    public Map<String, List<BeanReferenceInfo>> getImports() {
+        return imports;
+    }
+
     public void addImport(BeanDefinition beanDefinition, String location) throws ClassNotFoundException {
         BeanReferenceInfo importReferenceInfo = parseLookupOrExportRefArg(beanDefinition, location);
         
         putInImports(importReferenceInfo);
     }
 
-    protected BeanReferenceInfo parseLookupOrExportRefArg(BeanDefinition beanDefinition, String location) throws ClassNotFoundException {
-        BeanReferenceInfo shortBeanDefinition = new BeanReferenceInfo();
-        
-        String importedBeanName = getTargetBeanName(beanDefinition);        
-        Class<?> beanInterface = getTargetBeanInterface(beanDefinition);   
-        
-        shortBeanDefinition.setBeanName(importedBeanName);
-        shortBeanDefinition.setBeanInterface(beanInterface);        
-        shortBeanDefinition.setLocation(location);
-
-        return shortBeanDefinition;
-    }
-
     public Map<String, BeanReferenceInfo> getExports() {
         return exports;
     }
 
-    public Map<String, List<BeanReferenceInfo>> getImports() {
-        return imports;
-    }
-
     public void addExport(BeanDefinition beanDefinition, String location) throws ClassNotFoundException, BeanCreationException {
         BeanReferenceInfo exportReferenceInfo = getExportReference(beanDefinition, location);
-        
+
         putInExports(exportReferenceInfo);
     }
-    
+
     public boolean areThereImportsWithoutExports() {
         boolean allImportsHaveExports = false;
         
@@ -80,6 +69,19 @@ public class ContextAnalyzer {
         }
         
         return allImportsHaveExports;
+    }
+
+    public boolean areThereExportsWithoutImport() {
+        boolean allExportshaveImports = true;
+
+        for (String exportedBeanName : exports.keySet()) {
+            if (!imports.containsKey(exportedBeanName)) {
+                allExportshaveImports = false;
+                log.warn("Bean {} was exported but never imported", exportedBeanName);
+            }
+        }
+
+        return allExportshaveImports;
     }
 
     public boolean areImportsTypesCorrect() {
@@ -105,17 +107,36 @@ public class ContextAnalyzer {
         return importsTypesAreCorrect;
     }
 
-    public boolean areThereExportsWithoutImport() {
-        boolean allExportshaveImports = true;
-        
-        for (String exportedBeanName : exports.keySet()) {
-            if (!imports.containsKey(exportedBeanName)) {
-                allExportshaveImports = false;
-                log.warn("Bean {} was exported but never imported", exportedBeanName);
-            }
+
+    protected BeanReferenceInfo parseLookupOrExportRefArg(BeanDefinition beanDefinition, String location) throws ClassNotFoundException {
+        BeanReferenceInfo shortBeanDefinition = new BeanReferenceInfo();
+
+        String importedBeanName = getTargetBeanName(beanDefinition);
+        Class<?> beanInterface = getTargetBeanInterface(beanDefinition);
+
+        shortBeanDefinition.setBeanName(importedBeanName);
+        shortBeanDefinition.setBeanInterface(beanInterface);
+        shortBeanDefinition.setLocation(location);
+
+        return shortBeanDefinition;
+    }
+
+    protected String getTargetBeanName(BeanDefinition beanDefinition) {
+        String importedBeanName = null;
+
+        ConstructorArgumentValues.ValueHolder valueHolder = beanDefinition
+                .getConstructorArgumentValues().getGenericArgumentValues().get(0);
+        Object beanNameValueHolder = valueHolder.getValue();
+
+        if (beanNameValueHolder instanceof RuntimeBeanNameReference) {
+            importedBeanName = ((RuntimeBeanNameReference)valueHolder.getValue()).getBeanName();
+        } else if (beanNameValueHolder instanceof TypedStringValue) {
+            importedBeanName = ((TypedStringValue)valueHolder.getValue()).getValue();
+        } else if (beanNameValueHolder instanceof String) {
+            importedBeanName = (String)beanNameValueHolder;
         }
-        
-        return allExportshaveImports;
+
+        return importedBeanName;
     }
 
     protected BeanReferenceInfo getExportReference(BeanDefinition beanDefinition, String location) throws ClassNotFoundException {
@@ -134,24 +155,33 @@ public class ContextAnalyzer {
         return parseLookupOrExportRefArg(exportRefBeanDefinition, location);
     }
 
-    protected String getTargetBeanName(BeanDefinition beanDefinition) {
-        String importedBeanName = null;
-        
-        ConstructorArgumentValues.ValueHolder valueHolder = beanDefinition
-                .getConstructorArgumentValues().getGenericArgumentValues().get(0);
-        Object beanNameValueHolder = valueHolder.getValue();
-        
-        if (beanNameValueHolder instanceof RuntimeBeanNameReference) {
-            importedBeanName = ((RuntimeBeanNameReference)valueHolder.getValue()).getBeanName();
-        } else if (beanNameValueHolder instanceof TypedStringValue) {
-            importedBeanName = ((TypedStringValue)valueHolder.getValue()).getValue();
-        } else if (beanNameValueHolder instanceof String) {
-            importedBeanName = (String)beanNameValueHolder;
+    //TODO should be private or protected
+    public void putInImports(BeanReferenceInfo importRefInfo) {
+        String importBeanName = importRefInfo.getBeanName();
+
+        if (imports.containsKey(importBeanName)) {
+            imports.get(importBeanName).add(importRefInfo);
+        } else {
+            List<BeanReferenceInfo> refInfoList = new ArrayList<BeanReferenceInfo>();
+            refInfoList.add(importRefInfo);
+            imports.put(importBeanName, refInfoList);
         }
-        
-        return importedBeanName;
     }
-    
+
+    //TODO should be private or protected
+    public void putInExports(BeanReferenceInfo exportRefInfo) {
+        String exportedBeanName = exportRefInfo.getBeanName();
+
+        if (exports.containsKey(exportedBeanName)) {
+            throw new BeanCreationException(String.format(
+                    "Double export was defined: %s in context %s. Previous export was in context %s",
+                    exportedBeanName, exportRefInfo.getLocation(), exports.get(exportedBeanName).getLocation()));
+        } else {
+            exports.put(exportedBeanName, exportRefInfo);
+        }
+    }
+
+
     private Class<?> getTargetBeanInterface(BeanDefinition beanDefinition) throws ClassNotFoundException {
         Class<?> beanInterface = null;
 
@@ -167,29 +197,5 @@ public class ContextAnalyzer {
         }
 
         return beanInterface;
-    }
-    
-    public void putInImports(BeanReferenceInfo importRefInfo) {
-        String importBeanName = importRefInfo.getBeanName();
-        
-        if (imports.containsKey(importBeanName)) {
-            imports.get(importBeanName).add(importRefInfo);
-        } else {
-            List<BeanReferenceInfo> refInfoList = new ArrayList<BeanReferenceInfo>();
-            refInfoList.add(importRefInfo);
-            imports.put(importBeanName, refInfoList);
-        }
-    }
-    
-    public void putInExports(BeanReferenceInfo exportRefInfo) {
-        String exportedBeanName = exportRefInfo.getBeanName();
-        
-        if (exports.containsKey(exportedBeanName)) {
-            throw new BeanCreationException(String.format(
-                    "Double export was defined: %s in context %s. Previous export was in context %s",
-                    exportedBeanName, exportRefInfo.getLocation(), exports.get(exportedBeanName).getLocation()));
-        } else {            
-            exports.put(exportedBeanName, exportRefInfo);
-        }
     }
 }

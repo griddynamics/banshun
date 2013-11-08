@@ -22,16 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanCreationException;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,9 +30,11 @@ public class DependencySorter {
 
     private static final Logger log = LoggerFactory.getLogger(DependencySorter.class);
     private static final Logger logGraph = LoggerFactory.getLogger("spring.nested.dependencies.graph");
-    private List<Location> conflictContextGroup = Collections.emptyList();
     private static Pattern locationNamePattern = Pattern.compile("[A-Za-z0-9\\.\\$_-]*\\.xml");
+
+    private List<Location> conflictContextGroup = Collections.emptyList();
     private boolean prohibitCycles = true;
+    private List<Location> locations = new LinkedList<Location>();
 
     interface Predicate {
         boolean isValid(Location s);
@@ -72,15 +65,33 @@ public class DependencySorter {
     }
 
 
+    public DependencySorter(String[] configLocations, Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
+        this.locations = prepareLocations(configLocations, imports, exports);
+    }
+
+
     public void setProhibitCycles(boolean prohibitCycles) {
         this.prohibitCycles = prohibitCycles;
     }
 
-    List<Location> locations = new LinkedList<Location>();
-
-    public DependencySorter(String[] configLocations, Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
-        this.locations = prepareLocations(configLocations, imports, exports);
+    public String[] getConflictContextGroup() {
+        return collectLocationNames(conflictContextGroup);
     }
+
+    public String[] sort() {
+        return collectLocationNames(sortLocations());
+    }
+
+    public String[] collectLocationNames(List<Location> locations) {
+        String[] result = new String[locations.size()];
+
+        int i = 0;
+        for (Location location : locations) {
+            result[i++] = location.getLocationName();
+        }
+        return result;
+    }
+
 
     private List<Location> prepareLocations(String[] configLocations, Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
         List<Location> locations = new LinkedList<Location>();
@@ -147,25 +158,6 @@ public class DependencySorter {
         return allImportBeans;
     }
 
-    public String[] sort() {
-        return collectLocationNames(sortLocations());
-    }
-
-
-    public String[] collectLocationNames(List<Location> locations) {
-        String[] result = new String[locations.size()];
-        int i = 0;
-        for (Location location : locations) {
-            result[i++] = location.getLocationName();
-        }
-        return result;
-    }
-
-    public String[] getConflictContextGroup() {
-        return collectLocationNames(conflictContextGroup);
-    }
-
-
     private List<Location> sortLocations() {
         LinkedList<Location> list = new LinkedList<Location>(locations);
         List<Location> orderedHead = pullLocationListHead(list);
@@ -178,7 +170,8 @@ public class DependencySorter {
         if (!list.isEmpty()) {
             conflictContextGroup = list;
             if (!prohibitCycles) {
-                warningMessage(list);
+                log.warn("Conflict in nested context dependencies was found. Please check the following list of suspect contexts: {}",
+                        getCycleOfContexts(list));
             } else {
                 throw new BeanCreationException("Conflict in nested context dependencies was found. Check the " +
                         "following list of suspect contexts: " + getCycleOfContexts(list));
@@ -234,11 +227,6 @@ public class DependencySorter {
         return orderedHead;
     }
 
-    private void warningMessage(LinkedList<Location> list) {
-        log.warn("Conflict in nested context dependencies was found. Please check the following list of suspect contexts: {}",
-                getCycleOfContexts(list));
-    }
-
     private String getCycleOfContexts(LinkedList<Location> list) {
         StringBuilder sb = new StringBuilder();
 
@@ -270,6 +258,7 @@ public class DependencySorter {
         }
         return true;
     }
+
 
     Location removeLocation(Collection<Location> list, Predicate p) {
         for (Iterator<Location> iterator = list.iterator(); iterator.hasNext();) {

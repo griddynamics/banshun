@@ -40,14 +40,6 @@ public class ExportRef implements BeanFactoryAware {
         this.interfaceClass = interfaceClass;
     }
 
-    public void setTarget(String target) {
-        this.target = target;
-    }
-
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = beanFactory;
-    }
-
     /**
      * Name of the exported service. It's used to find this export reference by key
      * and also to find the actual service bean in injected bean factory.
@@ -57,8 +49,8 @@ public class ExportRef implements BeanFactoryAware {
         return target;
     }
 
-    public BeanFactory getBeanFactory() {
-        return beanFactory;
+    public void setTarget(String target) {
+        this.target = target;
     }
 
     /**
@@ -72,6 +64,15 @@ public class ExportRef implements BeanFactoryAware {
     public void setInterfaceClass(Class<?> interfaceClass) {
         this.interfaceClass = interfaceClass;
     }
+
+    public BeanFactory getBeanFactory() {
+        return beanFactory;
+    }
+
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
+    }
+
 
     @Override
     public String toString() {
