@@ -29,6 +29,7 @@
         <servletApi.version>2.5</servletApi.version>
         <junit.version>4.7</junit.version>
         <jettyServletTester.version>6.1.16</jettyServletTester.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <modules>
@@ -115,6 +116,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
@@ -124,6 +126,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
+                <version>2.3</version>
             </plugin>
             <plugin>
                 <groupId>com.github.github</groupId>
