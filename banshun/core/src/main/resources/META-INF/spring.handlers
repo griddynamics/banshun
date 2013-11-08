@@ -1,1 +1,1 @@
-http\://www.griddynamics.com/schema/banshun=com.griddynamics.banshun.xml.NestedNamespaceHandler
+http\://www.griddynamics.com/schema/banshun=com.griddynamics.banshun.xml.BanshunNamespaceHandler
