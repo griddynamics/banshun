@@ -69,9 +69,39 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.griddynamics.banshun</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>banshun-core</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-aop</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${spring.version}</version>
             </dependency>
 
             <dependency>
@@ -79,30 +109,41 @@
                 <artifactId>spring-webmvc</artifactId>
                 <version>${spring.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>aopalliance</groupId>
+                <artifactId>aopalliance</artifactId>
+                <version>1.0</version>
+            </dependency>
+
             <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>servlet-api</artifactId>
-                <scope>provided</scope>
                 <version>${servletApi.version}</version>
+                <scope>provided</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <scope>provided</scope>
                 <version>${slf4j.version}</version>
+                <scope>provided</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
                 <version>${slf4j.version}</version>
                 <scope>test</scope>
             </dependency>
+
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <scope>test</scope>
                 <version>${junit.version}</version>
+                <scope>test</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>jetty-servlet-tester</artifactId>
