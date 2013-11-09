@@ -21,12 +21,14 @@ package com.griddynamics.banshun;
 import java.util.*;
 
 public class LocationsGraph {
+
     private Map<String, HashSet<String>> dependOn = new HashMap<String, HashSet<String>>();
     private Map<String, HashSet<String>> dependenciesOf = new HashMap<String, HashSet<String>>();
 
     public LocationsGraph(Map<String, List<BeanReferenceInfo>> imports, Map<String, BeanReferenceInfo> exports) {
         for (String beanName : imports.keySet()) {
             String expLoc = exports.get(beanName).getLocation();
+
             if (!dependenciesOf.containsKey(expLoc)) {
                 dependenciesOf.put(expLoc, new HashSet<String>());
             }
@@ -56,6 +58,7 @@ public class LocationsGraph {
     public void transitiveClosure(String loc, Set<String> marked, boolean isDependsOnMode) {
         marked.add(loc);
         Map<String, HashSet<String>> locationDependencies = isDependsOnMode ? dependOn : dependenciesOf;
+
         if (locationDependencies.containsKey(loc)) {
             for (String dependsOn : locationDependencies.get(loc)) {
                 if (!marked.contains(dependsOn)) {

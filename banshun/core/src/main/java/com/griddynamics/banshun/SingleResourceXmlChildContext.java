@@ -27,15 +27,17 @@ import org.springframework.core.io.Resource;
 import java.io.IOException;
 
 public final class SingleResourceXmlChildContext extends ClassPathXmlApplicationContext {
-    private Resource res;
 
-    public SingleResourceXmlChildContext(Resource res, ApplicationContext parent) {
-        this.res = res;
+    private Resource resource;
+
+    public SingleResourceXmlChildContext(Resource resource, ApplicationContext parent) {
+        this.resource = resource;
         setParent(parent);
         refresh();
     }
 
+    @Override
     protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {
-        reader.loadBeanDefinitions(res);
+        reader.loadBeanDefinitions(resource);
     }
 }

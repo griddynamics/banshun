@@ -21,5 +21,6 @@ package com.griddynamics.banshun;
 import java.util.Map;
 
 public interface ExceptionsLogger {
+
     public Map<String, Exception> getNestedContextsExceptions();
 }
