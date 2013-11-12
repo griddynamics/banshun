@@ -30,7 +30,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LookupTargetSource implements TargetSource {
-    private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
+    private static final Pattern BEANNAME_PATTERN = Pattern.compile("(.*)" + ContextParentBean.TARGET_SOURCE_SUFFIX);
+
+	private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
 
     private AtomicReference<Object> target = new AtomicReference<Object>();
     private final ApplicationContext context;
@@ -44,8 +46,7 @@ public class LookupTargetSource implements TargetSource {
         this.targetBeanName = targetBeanName;
         this.targetClass = targetClass;
 
-        final Pattern pattern = Pattern.compile("(.*)" + ContextParentBean.TARGET_SOURCE_SUFFIX);
-        Matcher matcher = pattern.matcher(targetBeanName);
+        Matcher matcher = BEANNAME_PATTERN.matcher(targetBeanName);
         matcher.matches();
         this.actualBeanName = matcher.group(1);
     }

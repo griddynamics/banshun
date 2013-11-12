@@ -139,12 +139,15 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         String beanDefinitionName = name + BEAN_DEF_SUFFIX;
 
         if (!context.containsBean(beanDefinitionName)) {
-            BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(clazz).getBeanDefinition();
+			BeanDefinition beanDefinition = BeanDefinitionBuilder
+					.genericBeanDefinition(ImportRef.class)
+					.addConstructorArgValue(clazz).getBeanDefinition();
 
-            ((BeanDefinitionRegistry) beanFactory).registerBeanDefinition(beanDefinitionName, beanDefinition);
+			((BeanDefinitionRegistry) beanFactory).registerBeanDefinition(
+					beanDefinitionName, beanDefinition);
         }
 
-        return context.getBean(beanDefinitionName, clazz);
+        return (T) context.getBean(beanDefinitionName, ImportRef.class);
     }
 
 
@@ -265,6 +268,10 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         }
 
         return new SingleResourceXmlChildContext(res, parent);
+    }
+    
+    static interface ImportRef{
+    	
     }
 
 }
