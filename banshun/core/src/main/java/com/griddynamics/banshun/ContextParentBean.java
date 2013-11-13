@@ -147,6 +147,13 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         return context.getBean(beanDefinitionName, clazz);
     }
 
+    /** side effect only version of lookup(), addresses #8 in a little bit hakish way.
+     * it inserts {name}_beanDef bean definition with the specified class.
+     * it allows autowiring run work in root context  */
+    public Void voidLookup(String name, Class<?> clazz){
+    	lookup(name, clazz);
+    	return null;
+    }
 
     /**
      * Resolves configs paths and build nested children contexts.
