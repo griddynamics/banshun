@@ -17,16 +17,15 @@
  
   @Project: Banshun
  -->
-<beans:beans xmlns="http://www.griddynamics.com/schema/banshun"
-       xmlns:beans="http://www.springframework.org/schema/beans"
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:bs="http://www.griddynamics.com/schema/banshun"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
-         http://www.griddynamics.com/schema/banshun http://www.griddynamics.com/schema/banshun/banshun-schema.xsd
-         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-       ">
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.griddynamics.com/schema/banshun http://www.griddynamics.com/schema/banshun/banshun-schema.xsd">
 
-    <beans:import resource="second-context.xml" />
+    <import resource="second-context.xml" />
 
-    <export ref="secondChild" interface="com.griddynamics.banshun.xml.Child" />
+    <bs:export ref="secondChild" interface="com.griddynamics.banshun.xml.Child" />
 
-</beans:beans>
+</beans>

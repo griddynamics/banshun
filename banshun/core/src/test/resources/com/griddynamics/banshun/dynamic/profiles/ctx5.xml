@@ -19,15 +19,14 @@
  -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:nested="http://www.griddynamics.com/schema/banshun"
+       xmlns:bs="http://www.griddynamics.com/schema/banshun"
        xsi:schemaLocation="
-           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-           http://www.griddynamics.com/schema/banshun http://www.griddynamics.com/schema/banshun/banshun-schema.xsd
-       ">
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.griddynamics.com/schema/banshun http://www.griddynamics.com/schema/banshun/banshun-schema.xsd">
 
-    <nested:import id="object4" interface="com.griddynamics.banshun.analyzer.SubInterface"/>
-    <nested:import id="object6" interface="com.griddynamics.banshun.analyzer.SubInterface"/>
+    <bs:import id="object4" interface="com.griddynamics.banshun.analyzer.SubInterface"/>
+    <bs:import id="object6" interface="com.griddynamics.banshun.analyzer.SubInterface"/>
 
     <bean name="context5" class="com.griddynamics.banshun.analyzer.TransportObject" lazy-init="true"/>
-    <nested:export ref="context5" interface="com.griddynamics.banshun.analyzer.SuperInterface"/>
+    <bs:export ref="context5" interface="com.griddynamics.banshun.analyzer.SuperInterface"/>
 </beans>

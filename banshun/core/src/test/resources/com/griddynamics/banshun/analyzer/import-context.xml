@@ -19,11 +19,10 @@
  -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:nested="http://www.griddynamics.com/schema/banshun"
+       xmlns:bs="http://www.griddynamics.com/schema/banshun"
        xsi:schemaLocation="
-         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-         http://www.griddynamics.com/schema/banshun http://www.griddynamics.com/schema/banshun/banshun-schema.xsd
-       ">
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.griddynamics.com/schema/banshun http://www.griddynamics.com/schema/banshun/banshun-schema.xsd">
 
     <!-- Old fashion way using boilerplate xml wasn't changed here
         due to check it's working every time by running unit-tests -->
@@ -37,7 +36,7 @@
         <constructor-arg value="com.griddynamics.banshun.analyzer.SubInterface"/>
     </bean>
 
-    <nested:import id="thirdObject" interface="com.griddynamics.banshun.analyzer.SubInterface"/>
+    <bs:import id="thirdObject" interface="com.griddynamics.banshun.analyzer.SubInterface"/>
 
-    <nested:import id="fourthObject" interface="com.griddynamics.banshun.analyzer.SubInterface"/>
+    <bs:import id="fourthObject" interface="com.griddynamics.banshun.analyzer.SubInterface"/>
 </beans>
