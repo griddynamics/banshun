@@ -26,14 +26,13 @@
     <bean name="root" class="com.griddynamics.banshun.ContextParentBean">
         <property name="configLocations" value="
                 /com/griddynamics/banshun/xml/first-export-context.xml,
-                /com/griddynamics/banshun/xml/second-export-context.xml
-        " />
-        <property name="strictErrorHandling" value="true" />
+                /com/griddynamics/banshun/xml/second-export-context.xml"/>
+        <property name="strictErrorHandling" value="true"/>
         <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>
 
     <bean id="proxyCreator" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-        <property name="customTargetSourceCreators" >
+        <property name="customTargetSourceCreators">
             <bean class="com.griddynamics.banshun.LookupTargetSourceCreator"/>
         </property>
     </bean>

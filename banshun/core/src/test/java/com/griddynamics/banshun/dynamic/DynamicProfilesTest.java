@@ -16,7 +16,7 @@
  * 
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.dynamic.profiles;
+package com.griddynamics.banshun.dynamic;
 
 import com.griddynamics.banshun.StrictContextParentBean;
 
@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 public class DynamicProfilesTest {
     @Test
     public void dynamicProfileTest0() throws Exception {
-        ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/banshun/dynamic/profiles/root-ctx.xml");
+        ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/banshun/dynamic/root-ctx.xml");
         StrictContextParentBean registry = (StrictContextParentBean) context.getBean("root");
         registry.setRunOnlyServices(new String[] {"object1"});
         registry.afterPropertiesSet();
@@ -46,7 +46,7 @@ public class DynamicProfilesTest {
 
     @Test
     public void dynamicProfileTest1() throws Exception {
-        ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/banshun/dynamic/profiles/root-ctx.xml");
+        ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/banshun/dynamic/root-ctx.xml");
         StrictContextParentBean registry = (StrictContextParentBean) context.getBean("root");
         registry.setRunOnlyServices(new String[] {"context3", "context7"});
         registry.afterPropertiesSet();
@@ -61,7 +61,7 @@ public class DynamicProfilesTest {
 
     @Test
     public void dynamicProfileTest2() throws Exception {
-        ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/banshun/dynamic/profiles/root-ctx.xml");
+        ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/banshun/dynamic/root-ctx.xml");
         StrictContextParentBean registry = (StrictContextParentBean) context.getBean("root");
         registry.setRunOnlyServices(new String[]{"context6"});
         registry.afterPropertiesSet();
@@ -76,7 +76,7 @@ public class DynamicProfilesTest {
 
     @Test
     public void dynamicProfileTest3() throws Exception {
-        ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/banshun/dynamic/profiles/root-ctx.xml");
+        ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/banshun/dynamic/root-ctx.xml");
         StrictContextParentBean registry = (StrictContextParentBean) context.getBean("root");
         registry.setRunOnlyServices(new String[] {"context5"});
         registry.afterPropertiesSet();

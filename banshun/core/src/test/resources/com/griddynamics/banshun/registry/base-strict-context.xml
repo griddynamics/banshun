@@ -19,27 +19,25 @@
  -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd"
+       default-lazy-init="true">
 
     <bean id="childContextPrototype" class="com.griddynamics.banshun.SingleResourceXmlChildContext" scope="prototype"/>
 
     <bean name="root" class="com.griddynamics.banshun.StrictContextParentBean">
-        <property name="configLocations" value="
-                /com/griddynamics/banshun/dynamic/profiles/ctx1.xml,
-                /com/griddynamics/banshun/dynamic/profiles/ctx2.xml,
-                /com/griddynamics/banshun/dynamic/profiles/ctx3.xml,
-                /com/griddynamics/banshun/dynamic/profiles/ctx4.xml,
-                /com/griddynamics/banshun/dynamic/profiles/ctx5.xml,
-                /com/griddynamics/banshun/dynamic/profiles/ctx6.xml,
-                /com/griddynamics/banshun/dynamic/profiles/ctx7.xml
-        " />
-        <property name="strictErrorHandling" value="true" />
+        <property name="configLocations" value=""/>
+        <property name="strictErrorHandling" value="true"/>
         <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>
 
     <bean id="proxyCreator" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-        <property name="customTargetSourceCreators" >
+        <property name="customTargetSourceCreators">
             <bean class="com.griddynamics.banshun.LookupTargetSourceCreator"/>
+        </property>
+        <property name="beanNames">
+            <list>
+                <value>just*</value>
+            </list>
         </property>
     </bean>
 </beans>

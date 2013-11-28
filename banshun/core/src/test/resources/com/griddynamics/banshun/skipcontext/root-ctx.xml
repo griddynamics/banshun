@@ -25,20 +25,19 @@
 
     <bean name="root" class="com.griddynamics.banshun.StrictContextParentBean">
         <property name="configLocations" value="
-                /com/griddynamics/banshun/skipcontext/ctx1.xml,
-                /com/griddynamics/banshun/skipcontext/ctx2.xml,
-                /com/griddynamics/banshun/skipcontext/ctx3.xml,
-                /com/griddynamics/banshun/skipcontext/ctx4.xml,
-                /com/griddynamics/banshun/skipcontext/ctx5.xml,
-                /com/griddynamics/banshun/skipcontext/ctx6.xml,
-                /com/griddynamics/banshun/skipcontext/ctx7.xml
-        " />
-        <property name="strictErrorHandling" value="false" />
+                /com/griddynamics/banshun/ctx1.xml,
+                /com/griddynamics/banshun/ctx2.xml,
+                /com/griddynamics/banshun/ctx3.xml,
+                /com/griddynamics/banshun/ctx4.xml,
+                /com/griddynamics/banshun/ctx5.xml,
+                /com/griddynamics/banshun/ctx6.xml,
+                /com/griddynamics/banshun/ctx7.xml"/>
+        <property name="strictErrorHandling" value="false"/>
         <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>
 
     <bean id="proxyCreator" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-        <property name="customTargetSourceCreators" >
+        <property name="customTargetSourceCreators">
             <bean class="com.griddynamics.banshun.LookupTargetSourceCreator"/>
         </property>
     </bean>

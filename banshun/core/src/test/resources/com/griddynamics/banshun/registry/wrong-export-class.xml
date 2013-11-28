@@ -22,34 +22,21 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
        default-lazy-init="true">
 
-    <bean id="childContextPrototype" class="com.griddynamics.banshun.SingleResourceXmlChildContext" scope="prototype"/>
-    <bean name="root" class="com.griddynamics.banshun.StrictContextParentBean">
-        <property name="configLocations" value=""/>
-        <property name="strictErrorHandling" value="true" />
-        <property name="childContextPrototype" value="childContextPrototype"/>
-    </bean>
+    <import resource="base-strict-context.xml" />
 
-    <bean id="proxyCreator" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-        <property name="customTargetSourceCreators" >
-            <bean class="com.griddynamics.banshun.LookupTargetSourceCreator"/>
-        </property>
-        <property name="beanNames">
-            <list>
-                <value>just*</value>
-            </list>
-        </property>
-    </bean>
-
-    <bean name="export-declaration" factory-bean="root" factory-method="export">
+    <bean name="export-declaration" factory-bean="root" factory-method="export"
+          depends-on="early-import">
         <constructor-arg>
             <bean class="com.griddynamics.banshun.ExportRef">
                 <constructor-arg> <idref local="just-bean"/> </constructor-arg>
-                <constructor-arg value="com.griddynamics.banshun.NarrowDaddy"/>
+                <constructor-arg value="com.griddynamics.banshun.ExtendedChild"/>
             </bean>
         </constructor-arg>
     </bean>
 
-    <bean id="just-bean" class="com.griddynamics.banshun.Bean"/>
+    <bean id="just-bean" class="java.lang.Integer">
+        <constructor-arg value="666"/>
+    </bean>
 
     <bean name="early-import" factory-bean="root" factory-method="lookup">
         <constructor-arg> <idref local="just-bean"/> </constructor-arg>
@@ -61,5 +48,4 @@
         <constructor-arg> <idref local="just-bean"/> </constructor-arg>
         <constructor-arg value="com.griddynamics.banshun.ExtendedChild"/>
     </bean>
-
 </beans>

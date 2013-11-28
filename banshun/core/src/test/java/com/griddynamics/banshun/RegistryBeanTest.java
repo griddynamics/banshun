@@ -30,20 +30,17 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.griddynamics.banshun.ContextParentBean;
-import com.griddynamics.banshun.ExportTargetSource;
-
 public class RegistryBeanTest extends TestCase {
     public void testExact() {
-        check("com/griddynamics/banshun/exact-match-import.xml");
+        check("com/griddynamics/banshun/registry/exact-match-import.xml");
     }
 
     public void testWider() {
-        check("com/griddynamics/banshun/coarse-import.xml");
+        check("com/griddynamics/banshun/registry/coarse-import.xml");
     }
 
     public void testTooConcreteImport() {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("com/griddynamics/banshun/illegal-concrete-import.xml");
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("com/griddynamics/banshun/registry/illegal-concrete-import.xml");
 
         Assert.assertTrue("have no exports due to laziness", hasNoExports(ctx));
         Object proxy = ctx.getBean("early-import");
@@ -72,7 +69,7 @@ public class RegistryBeanTest extends TestCase {
     }
 
     public void testWrongExport() {
-        ApplicationContext ctx = new ClassPathXmlApplicationContext("com/griddynamics/banshun/wrong-export-class.xml");
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("com/griddynamics/banshun/registry/wrong-export-class.xml");
 
         Object bean;
         try {
