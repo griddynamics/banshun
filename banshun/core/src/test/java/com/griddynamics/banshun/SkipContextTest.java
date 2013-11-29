@@ -16,9 +16,7 @@
  * 
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.skipcontext;
-
-import com.griddynamics.banshun.StrictContextParentBean;
+package com.griddynamics.banshun;
 
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;

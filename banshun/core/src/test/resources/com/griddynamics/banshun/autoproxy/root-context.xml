@@ -42,6 +42,6 @@
         <property name="advice" ref="advice"/>
     </bean>
 
-    <bean id="advice" class="com.griddynamics.banshun.autoproxy.AutoProxyTest$AroundMethod"/>
+    <bean id="advice" class="com.griddynamics.banshun.AutoProxyTest$AroundMethod"/>
 
 </beans>

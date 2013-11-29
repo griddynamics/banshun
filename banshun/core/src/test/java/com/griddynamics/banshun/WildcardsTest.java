@@ -16,9 +16,7 @@
  * 
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.wildcards;
-
-import com.griddynamics.banshun.ContextParentBean;
+package com.griddynamics.banshun;
 
 import org.junit.Before;
 import org.junit.Test;

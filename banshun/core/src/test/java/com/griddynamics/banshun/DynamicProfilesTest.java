@@ -16,9 +16,7 @@
  * 
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.dynamic;
-
-import com.griddynamics.banshun.StrictContextParentBean;
+package com.griddynamics.banshun;
 
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
@@ -26,7 +24,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DynamicProfilesTest {
     @Test

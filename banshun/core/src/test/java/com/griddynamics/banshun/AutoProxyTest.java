@@ -16,9 +16,8 @@
  * 
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.autoproxy;
+package com.griddynamics.banshun;
 
-import com.griddynamics.banshun.Registry;
 import com.griddynamics.banshun.fixtures.MiddleFace;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;

@@ -16,11 +16,7 @@
  * 
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.analyzer;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+package com.griddynamics.banshun;
 
 import com.griddynamics.banshun.fixtures.MiddleFace;
 import com.griddynamics.banshun.fixtures.RootFace;
@@ -28,9 +24,7 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.griddynamics.banshun.BeanReferenceInfo;
-import com.griddynamics.banshun.ContextAnalyzer;
-import com.griddynamics.banshun.Registry;
+import static org.junit.Assert.*;
 
 public class ContextAnalyzerTest {
 
