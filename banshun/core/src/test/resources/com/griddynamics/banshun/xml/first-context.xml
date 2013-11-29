@@ -19,11 +19,11 @@
  -->
  <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-    <bean name="firstChild" class="com.griddynamics.banshun.xml.ChildImpl"/>
+    <bean name="firstChild" class="com.griddynamics.banshun.fixtures.ChildImpl"/>
 
-    <bean name="parent" class="com.griddynamics.banshun.xml.ParentImpl">
+    <bean name="parent" class="com.griddynamics.banshun.fixtures.ParentImpl">
         <property name="child" ref="secondChild" />
     </bean>
 </beans>

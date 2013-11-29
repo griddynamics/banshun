@@ -23,8 +23,15 @@
 
     <bean id="childContextPrototype" class="com.griddynamics.banshun.SingleResourceXmlChildContext" scope="prototype"/>
 
-    <bean name="root" class="com.griddynamics.banshun.ContextParentBean">
-        <property name="configLocations" value=""/>
+    <bean name="root" class="com.griddynamics.banshun.StrictContextParentBean">
+        <property name="configLocations" value="
+                /com/griddynamics/banshun/ctx1.xml,
+                /com/griddynamics/banshun/dynamic/ctx2.xml,
+                /com/griddynamics/banshun/ctx3.xml,
+                /com/griddynamics/banshun/ctx4.xml,
+                /com/griddynamics/banshun/ctx5.xml,
+                /com/griddynamics/banshun/ctx6.xml,
+                /com/griddynamics/banshun/ctx7.xml"/>
         <property name="strictErrorHandling" value="true"/>
         <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>

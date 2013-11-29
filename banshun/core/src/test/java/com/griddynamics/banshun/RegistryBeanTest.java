@@ -18,11 +18,7 @@
  * */
 package com.griddynamics.banshun;
 
-import java.lang.reflect.Proxy;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
+import org.junit.Test;
 import org.springframework.aop.TargetSource;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
@@ -30,22 +26,27 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.griddynamics.banshun.ContextParentBean;
-import com.griddynamics.banshun.ExportTargetSource;
+import java.lang.reflect.Proxy;
 
-public class RegistryBeanTest extends TestCase {
-    public void testExact() {
-        check("com/griddynamics/banshun/exact-match-import.xml");
+import static org.junit.Assert.*;
+
+public class RegistryBeanTest {
+
+    @Test
+    public void importBeanWithSameClass() {
+        importValidBeanTest("com/griddynamics/banshun/registry/exact-match-import.xml");
     }
 
-    public void testWider() {
-        check("com/griddynamics/banshun/coarse-import.xml");
+    @Test
+    public void importBeanWithSuperclass() {
+        importValidBeanTest("com/griddynamics/banshun/registry/coarse-import.xml");
     }
 
-    public void testTooConcreteImport() {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("com/griddynamics/banshun/illegal-concrete-import.xml");
+    @Test
+    public void importBeanWithSubclass() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("com/griddynamics/banshun/registry/illegal-concrete-import.xml");
 
-        Assert.assertTrue("have no exports due to laziness", hasNoExports(ctx));
+        assertTrue("have no exports due to laziness", hasNoExports(ctx));
         Object proxy = ctx.getBean("early-import");
 
         // force export
@@ -55,24 +56,25 @@ public class RegistryBeanTest extends TestCase {
             // target is ready here, but types does not match
             proxy.toString();
         } catch (BeanNotOfRequiredTypeException e) {
-            Assert.assertEquals("just-bean", e.getBeanName());
+            assertEquals("just-bean", e.getBeanName());
 
             try {
-                Object b = ctx.getBean("late-import");
+                Object b = ctx.getBean("late-import").toString();
                 b.toString();
-            } catch (BeansException ee) {
-                Assert.assertEquals("just-bean", ((BeanNotOfRequiredTypeException) ee).getBeanName());
+            } catch (BeansException e2) {
+                assertEquals("just-bean", ((BeanNotOfRequiredTypeException) e2).getBeanName());
                 return;
             }
 
-            Assert.fail("we should have BeanCreactionException here");
+            fail("we should have BeanCreactionException here");
             return;
         }
-        Assert.fail("we should have BeanNotOfRequiredTypeException here");
+        fail("we should have BeanNotOfRequiredTypeException here");
     }
 
-    public void testWrongExport() {
-        ApplicationContext ctx = new ClassPathXmlApplicationContext("com/griddynamics/banshun/wrong-export-class.xml");
+    @Test
+    public void misconfiguredExport() {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("com/griddynamics/banshun/registry/wrong-export-class.xml");
 
         Object bean;
         try {
@@ -82,37 +84,37 @@ public class RegistryBeanTest extends TestCase {
             try {
                 bean = ctx.getBean("early-import");
                 bean.toString();
-            } catch (Exception ee) {
+            } catch (Exception e2) {
                 return;
             }
-            Assert.fail("we should have an Exception here.");
+            fail("we should have an Exception here.");
         }
-        Assert.fail("we should have an Exception here");
+        fail("we should have an Exception here");
     }
 
-    protected void check(String configLocation) {
+    protected void importValidBeanTest(String configLocation) {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(configLocation);
 
-        Assert.assertTrue("have no exports due to laziness", hasNoExports(ctx));
+        assertTrue("have no exports due to laziness", hasNoExports(ctx));
 
         Object proxy = ctx.getBean("early-import");
         try {
             proxy.toString();
-            Assert.fail("attempt to invoke proxy without export should lead to exception");
+            fail("attempt to invoke proxy without export should lead to exception");
         } catch (NoSuchBeanDefinitionException e) {
-            Assert.assertEquals("invoke bean without proper export", "just-bean", e.getBeanName());
+            assertEquals("invoke bean without proper export", "just-bean", e.getBeanName());
         }
 
         // force export
         ctx.getBean("export-declaration");
 
-        Assert.assertSame(proxy, ctx.getBean("early-import"));
-        Assert.assertFalse("have export ref", hasExport(ctx, "just-bean"));
+        assertSame(proxy, ctx.getBean("early-import"));
+        assertFalse("have export ref", hasExport(ctx, "just-bean"));
 
-        Assert.assertEquals("proxies should refer the same bean instance", proxy.toString(), ctx.getBean("late-import").toString());
-        Assert.assertSame("proxies should be the same instance", proxy, ctx.getBean("late-import"));
-        Assert.assertTrue("early import gives us a proxy", proxy instanceof Proxy);
-        Assert.assertTrue("late import gives us a proxy", ctx.getBean("late-import") instanceof Proxy);
+        assertEquals("proxies should refer the same bean instance", proxy.toString(), ctx.getBean("late-import").toString());
+        assertSame("proxies should be the same instance", proxy, ctx.getBean("late-import"));
+        assertTrue("early import gives us a proxy", proxy instanceof Proxy);
+        assertTrue("late import gives us a proxy", ctx.getBean("late-import") instanceof Proxy);
     }
 
     private boolean hasExport(ClassPathXmlApplicationContext ctx, String bean) {

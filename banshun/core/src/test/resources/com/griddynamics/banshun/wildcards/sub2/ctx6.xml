@@ -19,9 +19,5 @@
  -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:nested="http://www.griddynamics.com/schema/banshun"
-       xsi:schemaLocation="
-           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-           http://www.griddynamics.com/schema/banshun http://www.griddynamics.com/schema/banshun/banshun-schema.xsd
-       ">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 </beans>
