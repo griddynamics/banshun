@@ -19,7 +19,6 @@
 package com.griddynamics.banshun.xml;
 
 import com.griddynamics.banshun.Registry;
-
 import com.griddynamics.banshun.fixtures.Child;
 import com.griddynamics.banshun.fixtures.Parent;
 import org.junit.BeforeClass;
@@ -30,22 +29,19 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-/**
- * @author oleg
- * @date: Sep 14, 2010
- */
-public class NestedTest {
+
+public class BanshunNamespaceTest {
 
     private static Registry registry;
 
     @BeforeClass
-    public static void before() {
+    public static void initialize() {
         ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/banshun/xml/root-context.xml");
         registry = (Registry) context.getBean("root");
     }
 
     @Test
-    public void testNested() {
+    public void lookupExportedBeans() {
         Child first = registry.lookup("firstChild", Child.class);
         Child second = registry.lookup("secondChild", Child.class);
 
@@ -57,7 +53,7 @@ public class NestedTest {
     }
 
     @Test
-    public void testChildWithChild() {
+    public void lookupExportedBeanDependingOnImportedBean() {
         Parent parent = registry.lookup("parent", Parent.class);
 
         assertNotNull(parent);

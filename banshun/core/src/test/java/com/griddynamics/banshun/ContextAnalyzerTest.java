@@ -26,15 +26,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import static org.junit.Assert.*;
 
+
 public class ContextAnalyzerTest {
 
-    /**
-     * This test checks whether the exceptions will happen during instantiation of cont
-     */
     @Test
-    public void testNested() {
+    public void lookupExportedBeans() {
         ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/banshun/analyzer/root-context.xml");
-        Registry registry = (Registry) context.getBean("root");
+        Registry registry = context.getBean("root", Registry.class);
         
         MiddleFace first = registry.lookup("firstObject", MiddleFace.class);
         RootFace second = registry.lookup("secondObject", RootFace.class);
@@ -44,7 +42,7 @@ public class ContextAnalyzerTest {
     }
     
     @Test
-    public void testAreImportsTypesCorrect() {
+    public void verifyImportTypes() {
         ContextAnalyzer analyzer = new ContextAnalyzer();
         String beanName = "firstObject";
         
@@ -72,7 +70,7 @@ public class ContextAnalyzerTest {
     }
     
     @Test
-    public void testAreThereImportsWithoutExports() {
+    public void areThereImportsWithoutExports() {
         ContextAnalyzer analyzer = new ContextAnalyzer();
         String beanName = "firstObject";
         
@@ -92,7 +90,7 @@ public class ContextAnalyzerTest {
     }
     
     @Test
-    public void testAreThereExportsWithoutImports() {
+    public void areThereExportsWithoutImport() {
         ContextAnalyzer analyzer = new ContextAnalyzer();
         String beanName = "firstObject";
         
