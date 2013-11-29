@@ -20,6 +20,8 @@ package com.griddynamics.banshun.xml;
 
 import com.griddynamics.banshun.Registry;
 
+import com.griddynamics.banshun.fixtures.Child;
+import com.griddynamics.banshun.fixtures.Parent;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;

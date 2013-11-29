@@ -26,6 +26,6 @@
 
     <import resource="second-context.xml" />
 
-    <bs:export ref="secondChild" interface="com.griddynamics.banshun.xml.Child" />
+    <bs:export ref="secondChild" interface="com.griddynamics.banshun.fixtures.Child" />
 
 </beans>

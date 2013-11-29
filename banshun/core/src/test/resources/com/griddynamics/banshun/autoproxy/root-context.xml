@@ -33,7 +33,7 @@
         <property name="customTargetSourceCreators">
             <bean class="com.griddynamics.banshun.LookupTargetSourceCreator"/>
         </property>
-        <property name="beanNames" value="customer*"/>
+        <property name="beanNames" value="someBean*"/>
         <property name="interceptorNames" value="advisor"/>
     </bean>
 
@@ -42,6 +42,6 @@
         <property name="advice" ref="advice"/>
     </bean>
 
-    <bean id="advice" class="com.griddynamics.banshun.autoproxy.AroundMethod"/>
+    <bean id="advice" class="com.griddynamics.banshun.autoproxy.AutoProxyTest$AroundMethod"/>
 
 </beans>

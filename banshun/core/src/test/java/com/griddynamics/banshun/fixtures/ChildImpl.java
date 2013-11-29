@@ -16,12 +16,25 @@
  * 
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.skipcontext;
+package com.griddynamics.banshun.fixtures;
 
-import com.griddynamics.banshun.analyzer.SuperInterface;
+import org.springframework.beans.factory.BeanNameAware;
 
-public class TransportFactory {
-    public static SuperInterface getObject() throws Exception {
-        throw new Exception("exception!");
+
+public class ChildImpl implements BeanNameAware, Child {
+
+    private String name;
+
+    public void setBeanName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

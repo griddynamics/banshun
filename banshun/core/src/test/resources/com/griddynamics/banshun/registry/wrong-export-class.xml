@@ -29,7 +29,7 @@
         <constructor-arg>
             <bean class="com.griddynamics.banshun.ExportRef">
                 <constructor-arg> <idref local="just-bean"/> </constructor-arg>
-                <constructor-arg value="com.griddynamics.banshun.ExtendedChild"/>
+                <constructor-arg value="com.griddynamics.banshun.fixtures.MiddleFace"/>
             </bean>
         </constructor-arg>
     </bean>
@@ -40,12 +40,12 @@
 
     <bean name="early-import" factory-bean="root" factory-method="lookup">
         <constructor-arg> <idref local="just-bean"/> </constructor-arg>
-        <constructor-arg value="com.griddynamics.banshun.ExtendedChild"/>
+        <constructor-arg value="com.griddynamics.banshun.fixtures.MiddleFace"/>
     </bean>
 
     <bean name="late-import" factory-bean="root" factory-method="lookup"
           depends-on="export-declaration">
         <constructor-arg> <idref local="just-bean"/> </constructor-arg>
-        <constructor-arg value="com.griddynamics.banshun.ExtendedChild"/>
+        <constructor-arg value="com.griddynamics.banshun.fixtures.MiddleFace"/>
     </bean>
 </beans>

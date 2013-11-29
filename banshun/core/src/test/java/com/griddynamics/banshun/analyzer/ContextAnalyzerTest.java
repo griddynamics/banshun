@@ -22,6 +22,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.griddynamics.banshun.fixtures.MiddleFace;
+import com.griddynamics.banshun.fixtures.RootFace;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -40,8 +42,8 @@ public class ContextAnalyzerTest {
         ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/banshun/analyzer/root-context.xml");
         Registry registry = (Registry) context.getBean("root");
         
-        SuperInterface first = registry.lookup("firstObject", SuperInterface.class);
-        SubInterface second = registry.lookup("secondObject", SubInterface.class);
+        MiddleFace first = registry.lookup("firstObject", MiddleFace.class);
+        RootFace second = registry.lookup("secondObject", RootFace.class);
 
         assertNotNull(first);
         assertNotNull(second);
@@ -53,13 +55,13 @@ public class ContextAnalyzerTest {
         String beanName = "firstObject";
         
         BeanReferenceInfo exportRef = new BeanReferenceInfo();
-        exportRef.setBeanInterface(SubInterface.class);
+        exportRef.setBeanInterface(RootFace.class);
         exportRef.setBeanName(beanName);
         
         analyzer.putInExports(exportRef);
         
         BeanReferenceInfo importRef1 = new BeanReferenceInfo();
-        importRef1.setBeanInterface(SubInterface.class);
+        importRef1.setBeanInterface(RootFace.class);
         importRef1.setBeanName(beanName);
         
         analyzer.putInImports(importRef1);
@@ -67,7 +69,7 @@ public class ContextAnalyzerTest {
         assertTrue(analyzer.areImportsTypesCorrect());
         
         BeanReferenceInfo importRef2 = new BeanReferenceInfo();
-        importRef2.setBeanInterface(SuperInterface.class);
+        importRef2.setBeanInterface(MiddleFace.class);
         importRef2.setBeanName(beanName);
         
         analyzer.putInImports(importRef2);

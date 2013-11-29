@@ -16,12 +16,8 @@
  * 
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.xml;
+package com.griddynamics.banshun.fixtures;
 
-/**
- * @author oleg
- * @date: Sep 14, 2010
- */
 public class ParentImpl implements Parent {
 
     private Child child;

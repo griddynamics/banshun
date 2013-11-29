@@ -21,8 +21,8 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-    <bean id="customer" class="com.griddynamics.banshun.autoproxy.CustomerServiceImpl" lazy-init="true">
-         <property name="name" value="Customer Name" />
+    <bean id="someBean" class="com.griddynamics.banshun.fixtures.JustBean" lazy-init="true">
+         <property name="name" value="Schrodinger" />
     </bean>
 
 </beans>

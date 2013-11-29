@@ -16,14 +16,11 @@
  * 
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.autoproxy;
+package com.griddynamics.banshun.fixtures;
 
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
+public interface Parent {
 
-public class AroundMethod implements MethodInterceptor {
-    public Object invoke(MethodInvocation methodInvocation) throws Throwable {
-        String result = (String) methodInvocation.proceed();
-        return "AroundMethod: " + result;
-    }
+    Child getChild();
+
+    void setChild(Child child);
 }

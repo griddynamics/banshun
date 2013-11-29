@@ -16,8 +16,9 @@
  * 
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.analyzer;
+package com.griddynamics.banshun.fixtures;
 
-public class TransportObject implements SuperInterface {
+public interface Child {
 
+    String getName();
 }

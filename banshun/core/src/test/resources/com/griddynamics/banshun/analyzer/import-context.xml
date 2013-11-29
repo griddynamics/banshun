@@ -28,15 +28,15 @@
         due to check it's working every time by running unit-tests -->
     <bean name="firstObject" factory-bean="root" factory-method="lookup" lazy-init="true">
         <constructor-arg value="firstObject"/>
-        <constructor-arg value="com.griddynamics.banshun.analyzer.SubInterface"/>
+        <constructor-arg value="com.griddynamics.banshun.fixtures.RootFace"/>
     </bean>
 
     <bean name="secondObject" factory-bean="root" factory-method="lookup" lazy-init="true">
         <constructor-arg value="secondObject"/>
-        <constructor-arg value="com.griddynamics.banshun.analyzer.SubInterface"/>
+        <constructor-arg value="com.griddynamics.banshun.fixtures.RootFace"/>
     </bean>
 
-    <bs:import id="thirdObject" interface="com.griddynamics.banshun.analyzer.SubInterface"/>
+    <bs:import id="thirdObject" interface="com.griddynamics.banshun.fixtures.RootFace"/>
 
-    <bs:import id="fourthObject" interface="com.griddynamics.banshun.analyzer.SubInterface"/>
+    <bs:import id="fourthObject" interface="com.griddynamics.banshun.fixtures.RootFace"/>
 </beans>

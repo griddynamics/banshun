@@ -16,15 +16,11 @@
  * 
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.xml;
+package com.griddynamics.banshun.fixtures;
 
-/**
- * @author oleg
- * @date: Sep 14, 2010
- */
-public interface Parent {
+public class FailFaceFactory {
 
-    Child getChild();
-
-    void setChild(Child child);
+    public static MiddleFace getObject() throws Exception {
+        throw new Exception("exception!");
+    }
 }

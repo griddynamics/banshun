@@ -19,19 +19,33 @@
 package com.griddynamics.banshun.autoproxy;
 
 import com.griddynamics.banshun.Registry;
-
-import org.junit.Assert;
+import com.griddynamics.banshun.fixtures.MiddleFace;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import static org.junit.Assert.assertEquals;
+
 public class AutoProxyTest {
+
     @Test
     public void testAutoProxy() {
         ApplicationContext context = new ClassPathXmlApplicationContext("com/griddynamics/banshun/autoproxy/root-context.xml");
-        Registry registry = (Registry) context.getBean("root");
-        CustomerService customer = registry.lookup("customer", CustomerService.class);
 
-        Assert.assertEquals("AroundMethod: Customer Name", customer.getName());
+        Registry registry = context.getBean("root", Registry.class);
+        MiddleFace someBean = registry.lookup("someBean", MiddleFace.class);
+
+        assertEquals("AroundMethod: Schrodinger", someBean.getName());
+    }
+
+
+    public static class AroundMethod implements MethodInterceptor {
+
+        public Object invoke(MethodInvocation methodInvocation) throws Throwable {
+            String result = (String) methodInvocation.proceed();
+            return "AroundMethod: " + result;
+        }
     }
 }

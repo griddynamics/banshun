@@ -13,11 +13,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.analyzer;
+package com.griddynamics.banshun.fixtures;
 
-public interface SubInterface {
+public class JustBean implements MiddleFace {
 
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

@@ -13,13 +13,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  *  @Project: Banshun
  * */
-package com.griddynamics.banshun.autoproxy;
+package com.griddynamics.banshun.fixtures;
 
-public interface CustomerService {
-    public void setName(String name);
-
-    public String getName();
+public interface RootFace {
 }

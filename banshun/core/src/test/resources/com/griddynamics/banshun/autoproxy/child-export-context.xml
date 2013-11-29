@@ -26,6 +26,6 @@
 
     <beans:import resource="child-context.xml" />
 
-    <export ref="customer" interface="com.griddynamics.banshun.autoproxy.CustomerService" />
+    <export ref="someBean" interface="com.griddynamics.banshun.fixtures.MiddleFace" />
 
 </beans:beans>
