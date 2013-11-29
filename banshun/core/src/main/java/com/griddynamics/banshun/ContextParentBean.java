@@ -128,9 +128,7 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
         String singletonBeanName = ref.getTarget() + TARGET_SOURCE_SUFFIX;
 
         if (!context.containsBean(singletonBeanName)) {
-            ExportTargetSource exportTargetSource = new ExportTargetSource(ref.getTarget(), ref.getInterfaceClass(), ref.getBeanFactory());
-
-            beanFactory.registerSingleton(singletonBeanName, exportTargetSource);
+            beanFactory.registerSingleton(singletonBeanName, new ExportTargetSource(ref));
         }
 
         return null;
@@ -143,9 +141,10 @@ public class ContextParentBean implements InitializingBean, ApplicationContextAw
 
         if (!context.containsBean(beanDefinitionName)) {
             RootBeanDefinition proxyBeanDef = new RootBeanDefinition(ProxyFactoryBean.class);
+
             proxyBeanDef.setRole(ROLE_INFRASTRUCTURE);
             proxyBeanDef.getPropertyValues().add("targetSource",
-                    new LookupTargetSource(context, name + TARGET_SOURCE_SUFFIX, clazz));
+                    new LookupTargetSource(name, name + TARGET_SOURCE_SUFFIX, clazz, context));
 
             ((BeanDefinitionRegistry) beanFactory).registerBeanDefinition(beanDefinitionName, proxyBeanDef);
         }

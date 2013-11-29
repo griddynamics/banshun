@@ -27,6 +27,7 @@ import org.springframework.beans.factory.BeanFactory;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ExportTargetSource implements TargetSource {
+
     private static final Logger log = LoggerFactory.getLogger(ExportTargetSource.class);
 
     private final AtomicReference<Object> target = new AtomicReference<Object>();
@@ -35,18 +36,15 @@ public class ExportTargetSource implements TargetSource {
     private final BeanFactory beanFactory;
 
 
-    public ExportTargetSource(String targetBeanName, Class<?> targetClass, BeanFactory beanFactory) {
-        this.targetBeanName = targetBeanName;
-        this.targetClass = targetClass;
-        this.beanFactory = beanFactory;
+    public ExportTargetSource(ExportRef exportRef) {
+        this.targetBeanName = exportRef.getTarget();
+        this.targetClass = exportRef.getInterfaceClass();
+        this.beanFactory = exportRef.getBeanFactory();
     }
+
 
     public BeanFactory getBeanFactory() {
         return beanFactory;
-    }
-
-    public String getTargetBeanName() {
-        return targetBeanName;
     }
 
     public Class<?> getTargetClass() {
@@ -64,7 +62,7 @@ public class ExportTargetSource implements TargetSource {
         Object localTarget = target.get();
 
         if (localTarget == null) {
-            if (target.compareAndSet(null, localTarget = getBeanFactory().getBean(getTargetBeanName()))) {
+            if (target.compareAndSet(null, localTarget = beanFactory.getBean(targetBeanName))) {
                 return localTarget;
             } else {
                 // log potentially redundant instance initialization
