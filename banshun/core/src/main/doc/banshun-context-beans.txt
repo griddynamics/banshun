@@ -1,0 +1,108 @@
+@startuml
+
+title Banshun Core Beans design\n<<mad>>
+
+package "export-ctx.xml" as exportCtx {
+object service <<singleton>>{
+ class=ServiceImpl
+ }
+ 
+ object "service-export-ref" as exportBeanDef <<factory method bean>>{
+   { root.export(exportRef);}
+   lazy-init=false
+ }
+ 
+ object "exportRef:ExportRef" as exportRef {
+  name="service"
+  class=Service.class
+ }
+ 
+ exportBeanDef -> exportRef
+ 
+ exportRef .up.> service : by name
+ 
+object beanFactory <<Spring>>
+
+ exportRef --> beanFactory
+ 
+ object "<bs:export" as exportTag{
+   ref="service"
+   interface=Service.class
+   >
+ }
+ 
+ exportTag ..> exportRef : creates
+ exportTag ..> exportBeanDef : creates
+  exportTag .> service :  by ref
+}
+
+package "root.xml" {
+
+ object "root:CtxParentBean" as root {
+  void export(ExportRef)
+  void lookup(String, Class)
+ }
+ 
+
+
+exportBeanDef --> root
+
+  object service_beanDef {
+   class=Service.class
+  }
+  
+  root .left.> service_beanDef : creates on lookup
+  
+  object "lookupTargetSourceCreator" as lookupTargetSourceCreator <<Spring>>{
+  }
+  
+  object lookupTargetSource {
+   name = "service_targetSource"
+   class = Service.class
+  }
+  
+  lookupTargetSourceCreator .> service_beanDef : enriches
+  
+  lookupTargetSourceCreator ..> lookupTargetSource : creates
+  
+  object exportTargetSource <<Singleton>>{
+    name=service_targetSource
+  }
+  
+  lookupTargetSource .> exportTargetSource  : finds by\nname=service_targetSource
+  
+  lookupTargetSource -> service : target
+  note on link : lazy resolves
+  
+  exportTargetSource -> exportRef
+  
+  root ..> exportTargetSource : creates on export
+  
+  exportTargetSource -> service : target
+  note on link : lazy resolves
+  
+  
+  object interceptor <<AOP>>
+  
+  interceptor ..> lookupTargetSourceCreator : advises 
+}
+
+package "import-ctx.xml"  {
+
+  object "service" as serviceLookup <<factory method bean>>{
+   { return 
+     root.lookup("service",Service.class); }
+  }
+
+ object "<bs:import" as importTag{
+   id="service"
+   interface=Service.class
+   >
+ }
+  serviceLookup -> root
+  
+  importTag .> serviceLookup : creates
+  
+
+}
+@enduml
