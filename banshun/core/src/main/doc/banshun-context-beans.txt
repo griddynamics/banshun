@@ -7,6 +7,8 @@ object service <<singleton>>{
  class=ServiceImpl
  }
  
+ note bottom of service : our precious
+ 
  object "service-export-ref" as exportBeanDef <<factory method bean>>{
    { root.export(exportRef);}
    lazy-init=false
@@ -31,8 +33,8 @@ object beanFactory <<Spring>>
    >
  }
  
- exportTag ..> exportRef : creates
- exportTag ..> exportBeanDef : creates
+ exportTag ..> exportRef : 1.creates
+ exportTag ..> exportBeanDef : 2.creates
   exportTag .> service :  by ref
 }
 
@@ -45,13 +47,13 @@ package "root.xml" {
  
 
 
-exportBeanDef --> root
+exportBeanDef --> root : 3.invokes export(exportRef)
 
   object service_beanDef {
    class=Service.class
   }
   
-  root .left.> service_beanDef : creates on lookup
+  root .left.> service_beanDef : 7.creates on lookup
   
   object "lookupTargetSourceCreator" as lookupTargetSourceCreator <<Spring>>{
   }
@@ -61,22 +63,22 @@ exportBeanDef --> root
    class = Service.class
   }
   
-  lookupTargetSourceCreator .> service_beanDef : enriches
+  lookupTargetSourceCreator .> service_beanDef : 8.enriches
   
-  lookupTargetSourceCreator ..> lookupTargetSource : creates
+  lookupTargetSourceCreator ..> lookupTargetSource : 10.creates
   
   object exportTargetSource <<Singleton>>{
     name=service_targetSource
   }
   
-  lookupTargetSource .> exportTargetSource  : finds by\nname=service_targetSource
+  lookupTargetSource .> exportTargetSource  : 11.finds by\nname=service_targetSource
   
   lookupTargetSource -> service : target
   note on link : lazy resolves
   
   exportTargetSource -> exportRef
   
-  root ..> exportTargetSource : creates on export
+  root ..> exportTargetSource : 3.1.creates on export
   
   exportTargetSource -> service : target
   note on link : lazy resolves
@@ -84,7 +86,7 @@ exportBeanDef --> root
   
   object interceptor <<AOP>>
   
-  interceptor ..> lookupTargetSourceCreator : advises 
+  interceptor ..> lookupTargetSourceCreator : 9.advises 
 }
 
 package "import-ctx.xml"  {
@@ -99,9 +101,12 @@ package "import-ctx.xml"  {
    interface=Service.class
    >
  }
-  serviceLookup -> root
+ 
+ note top of importTag: gollum 
+ 
+  serviceLookup -down-> root : 6.invokes lookup(name,class)
   
-  importTag .> serviceLookup : creates
+  importTag .left.> serviceLookup : 5.creates
   
 
 }
