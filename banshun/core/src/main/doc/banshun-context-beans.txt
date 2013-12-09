@@ -74,14 +74,14 @@ exportBeanDef --> root : 3.invokes export(exportRef)
   lookupTargetSource .> exportTargetSource  : 11.finds by\nname=service_targetSource
   
   lookupTargetSource -> service : target
-  note on link : lazy resolves
+  note on link : lazily resolves
   
   exportTargetSource -> exportRef
   
   root ..> exportTargetSource : 3.1.creates on export
   
   exportTargetSource -> service : target
-  note on link : lazy resolves
+  note on link : lazily resolves
   
   
   object interceptor <<AOP>>
