@@ -39,7 +39,7 @@
         <url>https://github.com/griddynamics/banshun</url>
         <connection>scm:git:https://github.com/griddynamics/banshun.git</connection>
 
-        <developerConnection>scm:git:git@hgithub.com/griddynamics/banshun.git</developerConnection>
+        <developerConnection>scm:git:git@github.com/griddynamics/banshun.git</developerConnection>
     </scm>
 
     <issueManagement>
