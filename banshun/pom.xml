@@ -16,14 +16,14 @@
     <groupId>com.griddynamics.banshun</groupId>
     <artifactId>banshun-parent</artifactId>
     <name>${project.groupId}:${project.artifactId}</name>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>allows to build isolated children contexts and import export some beans explicitly</description>
     <url>http://blog.griddynamics.com/2011/04/spring-nested-part-i-why.html</url>
 
     <properties>
-        <spring.version>3.0.5.RELEASE</spring.version>
+        <spring.version>4.1.6.RELEASE</spring.version>
         <slf4j.version>1.5.11</slf4j.version>
         <servletApi.version>2.5</servletApi.version>
         <junit.version>4.7</junit.version>
