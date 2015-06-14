@@ -21,7 +21,7 @@ When you have a modular Spring application and you are not happy with 'import' b
 * [deck][presentation]
 * [blog][gd_nested_blog]
 * [mail group][mailgroup]
-* [en][envideo],[ru][video]
+* Screencast - [en][envideo], Conf talk - [ru][video]
 
 [wiki]: https://github.com/griddynamics/banshun/wiki
 [gd_nested_blog]: http://blog.griddynamics.com/search/label/Spring
