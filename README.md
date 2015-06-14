@@ -21,10 +21,11 @@ When you have a modular Spring application and you are not happy with 'import' b
 * [deck][presentation]
 * [blog][gd_nested_blog]
 * [mail group][mailgroup]
-* [video][video] in Russian only
+* [en][envideo],[ru][video]
 
 [wiki]: https://github.com/griddynamics/banshun/wiki
 [gd_nested_blog]: http://blog.griddynamics.com/search/label/Spring
 [presentation]: https://docs.google.com/presentation/d/15_yZcqMW1qSMpDpihs5-emBnpCaYdIgZHd-Km3lDEh8/pub?start=false&loop=false&delayms=3000
 [mailgroup]: https://groups.google.com/forum/#!forum/banshun
 [video]: https://video.yandex.ru/users/xpinjection/view/335/
+[envideo]: https://youtu.be/1t6-A2ZWTBc
