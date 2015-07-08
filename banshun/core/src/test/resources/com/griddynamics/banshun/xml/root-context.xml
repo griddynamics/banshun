@@ -30,10 +30,4 @@
         <property name="strictErrorHandling" value="true"/>
         <property name="childContextPrototype" value="childContextPrototype"/>
     </bean>
-
-    <bean id="proxyCreator" class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
-        <property name="customTargetSourceCreators">
-            <bean class="com.griddynamics.banshun.LookupTargetSourceCreator"/>
-        </property>
-    </bean>
 </beans>

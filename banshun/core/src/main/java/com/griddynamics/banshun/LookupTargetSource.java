@@ -22,58 +22,53 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.TargetSource;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.*;
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class LookupTargetSource implements TargetSource {
-    private static final Logger log = LoggerFactory.getLogger(ContextParentBean.class);
 
-    private AtomicReference<Object> target = new AtomicReference<Object>();
+    private static final Logger log = LoggerFactory.getLogger(LookupTargetSource.class);
+
+    private final AtomicReference<Object> target = new AtomicReference<Object>();
+    private final String actualBeanName;
+    private final String targetBeanName;
+    private final Class<?> targetClass;
     private final ApplicationContext context;
 
-    private final String targetBeanName;
-    private String actualBeanName;
-    private final Class<?> targetClass;
 
-    public LookupTargetSource(ApplicationContext context, String targetBeanName, Class<?> targetClass) {
-        this.context = context;
+    public LookupTargetSource(String actualBeanName, String targetBeanName, Class<?> targetClass, ApplicationContext context) {
+        this.actualBeanName = actualBeanName;
         this.targetBeanName = targetBeanName;
         this.targetClass = targetClass;
-
-        final Pattern pattern = Pattern.compile("(.*)" + ContextParentBean.TARGET_SOURCE_SUFFIX);
-        Matcher matcher = pattern.matcher(targetBeanName);
-        matcher.matches();
-        this.actualBeanName = matcher.group(1);
+        this.context = context;
     }
 
-    public String getTargetBeanName() {
-        return this.targetBeanName;
-    }
 
     public Class<?> getTargetClass() {
-        return this.targetClass;
+        return targetClass;
     }
 
     public boolean isStatic() {
         return false;
     }
 
-    public void releaseTarget(Object target) throws Exception {
+    public void releaseTarget(Object target) {
     }
 
     public Object getTarget() throws BeansException {
         Object localTarget = target.get();
 
         if (localTarget == null) {
-            if (context.containsBean(getTargetBeanName())) {
-                ExportTargetSource ets = (ExportTargetSource) context.getBean(getTargetBeanName(), TargetSource.class);
-                checkForCorrectAssignment(ets.getTargetClass(), actualBeanName, ets.getBeanFactory().getType(actualBeanName));
+            if (context.containsBean(targetBeanName)) {
+                ExportTargetSource targetSource = context.getBean(targetBeanName, ExportTargetSource.class);
 
-                if (target.compareAndSet(null, localTarget = ets.getTarget())) {
+                checkForCorrectAssignment(targetSource.getTargetClass(), targetSource.getBeanFactory().getType(actualBeanName));
+
+                if (target.compareAndSet(null, localTarget = targetSource.getTarget())) {
                     return localTarget;
                 } else {
                     // log potentially redundant instance initialization
@@ -82,15 +77,15 @@ public class LookupTargetSource implements TargetSource {
                 }
             } else {
                 throw new NoSuchBeanDefinitionException(actualBeanName, String.format(
-                        "can't find export declaration for lookup(%s, %s)", actualBeanName, getTargetClass()));
+                        "Can't find export declaration for lookup(%s, %s)", actualBeanName, targetClass));
             }
         }
         return localTarget;
     }
 
-    private void checkForCorrectAssignment(Class<?> exportClass, String actualBeanName, Class<?> actualBeanClass) {
-        if (!getTargetClass().isAssignableFrom(exportClass)) {
-            throw new BeanNotOfRequiredTypeException(actualBeanName, getTargetClass(), exportClass);
+    private void checkForCorrectAssignment(Class<?> exportClass, Class<?> actualBeanClass) {
+        if (!targetClass.isAssignableFrom(exportClass)) {
+            throw new BeanNotOfRequiredTypeException(actualBeanName, targetClass, exportClass);
         }
 
         if (!exportClass.isAssignableFrom(actualBeanClass)) {
